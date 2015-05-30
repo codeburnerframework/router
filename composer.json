@@ -1,0 +1,16 @@
+{
+	"name": "codeburner/routing",
+	"description": "The Codeburner framework routing system.",
+	"licence": "MIT",
+	"authors": [
+		{
+			"name": "Alex Rohleder",
+			"email": "alexrohleder96@outlook.com"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"Codeburner\\Routing\\": "src"
+		}
+	}
+}
