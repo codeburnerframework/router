@@ -4,7 +4,7 @@ A fast route dispatcher package that enables you to build blazing fast applicati
 ##Instalation
 
 ###Manual
-[Download the zip](https://github.com/codeburnerframework/routing/archive/master.zip) and extract into your directory, then include the `bootstrap.php` file, and that's it!.
+[Download the zip](https://github.com/codeburnerframework/routing/archive/master.zip) and extract into your directory, then include the `src/bootstrap.php` file, and that's it!.
 
 ###Composer
 Add `codeburner/routing` to your `composer.json` file.
@@ -25,6 +25,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 - [Routes](#routes)
 	- [Static Routes](#static-routes)
 	- [Dinamic Routes](#dinamic-routes)
+		- [Route Pattern](#route-pattern)
 - [Action Types](#action-types)
     - [Class Methods](#class-methods)
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
@@ -33,6 +34,10 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 - [Filtering Routes](#filtering-routes)
 - [Grouping Routes](#grouping-routes)
 - [Named Routes](#named-routes)
+- [Exceptions](#exceptions)
+	- [Not Found](#not-found)
+	- [Method not Allowed](#method-not-allowed)
+	- [Unauthorized](#unauthorized)
 
 ###Basic Usage
 After you have the classes ready to be instantiate, you only need to register the routes and call the dispatch method.
@@ -69,6 +74,9 @@ $dispatcher->get('/account/{name}', function ($name) {
 	echo "Hello $name!";
 });
 ```
+
+#####Route Pattern
+By default a route pattern syntax is used where `{foo}` specified a placeholder with name foo and matching the string `[^/]+`. To adjust the pattern the placeholder matches, you can specify a custom pattern by writing `{foo:[0-9]+}`. A custom pattern for a route placeholder must not use capturing groups. For example `{lang:(en|de)}` is not a valid placeholder, because `()` is a capturing group. Instead you can use either `{lang:en|de}` or `{lang:(?:en|de)}`.
 
 ###Action Types
 Actions are what will be executed if some route match the request, there are three ways to define this actions, see below.
@@ -201,3 +209,11 @@ $dispatcher->get('/dashboard/{page}', 'dashboardcontroller@page', [], 'dashboard
 ```
 
 the first link will generate a `/dashboard` route and the second will generate `/dashboard/thePageParameter`.
+
+###Exceptions
+####Not Found
+Route not found exception `Codeburner\Routing\Exceptions\NotFoundException`
+####Method not Allowed
+Route method is wrong `Codeburner\Routing\Exceptions\MethodNotAllowedException`
+####Unauthorized
+A filter blocking the request passage `Codeburner\Routing\Exceptions\UnauthorizedException`

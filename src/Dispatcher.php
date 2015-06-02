@@ -3,9 +3,9 @@
 namespace Codeburner\Routing;
 
 use Codeburner\Routing\RouteFilterInterface;
-use CodeBurner\Routing\Exceptions\NotFoundException;
-use CodeBurner\Routing\Exceptions\MethodNotAllowedException;
-use CodeBurner\Routing\Exceptions\UnauthorizedException;
+use Codeburner\Routing\Exceptions\NotFoundException;
+use Codeburner\Routing\Exceptions\MethodNotAllowedException;
+use Codeburner\Routing\Exceptions\UnauthorizedException;
 
 class Dispatcher
 {
