@@ -62,19 +62,19 @@ class Dispatcher
 		if (isset($dinamics[$method])) {
 			$result = $this->dispatchDinamicRoute($dinamics[$method], $uri);
 
-			if ($result['found'] == true) {
+			if ($result['found'] === true) {
 				return $this->call($result);
 			}
 		}
 
-		if ($quiet == true) {
+		if ($quiet === true) {
 			return false;
 		}
 
 		$inOtherMethods = [];
 
 		foreach ($this->statics as $other_method => $map) {
-			if ($other_method != $method and isset($map[$uri])) {
+			if ($other_method != $method && isset($map[$uri])) {
 				$inOtherMethods[] = $other_method;
 			}
 		}
@@ -84,7 +84,7 @@ class Dispatcher
 			
 			$result = $this->dispatchDinamicRoute($data, $uri);
 
-			if ($result[0] == true) $inOtherMethods[] = $other_method;
+			if ($result[0] === true) $inOtherMethods[] = $other_method;
 		}
 
 		if ($inOtherMethods) {
@@ -113,7 +113,7 @@ class Dispatcher
 		}
 
 		if (isset($this->conditions['namespace'])) {
-			if (is_string($action) and strpos($action, '@')) {
+			if (is_string($action) && strpos($action, '@')) {
 				$action = rtrim($this->conditions['namespace'], '\\') . '\\' . $action;
 			}
 		}
@@ -356,7 +356,7 @@ class Dispatcher
 				}
 			}
 
-			if ($pass == false) {
+			if ($pass === false) {
 				throw new UnauthorizedException;
 			}
 		}
@@ -405,7 +405,7 @@ class Dispatcher
 	 */
 	protected function isStaticRoute($data)
 	{
-		if (count($data) == 1 and is_string($data[0])) {
+		if (count($data) == 1 && is_string($data[0])) {
 			return true;
 		}
 

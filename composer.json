@@ -1,7 +1,8 @@
 {
 	"name": "codeburner/routing",
 	"description": "The Codeburner framework routing system.",
-	"licence": "MIT",
+	"keywords": ["router", "dispacher", "codeburner"],
+	"license": "MIT",
 	"authors": [
 		{
 			"name": "Alex Rohleder",
