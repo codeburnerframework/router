@@ -87,7 +87,7 @@ class Dispatcher
 			if ($result[0] === true) $inOtherMethods[] = $other_method;
 		}
 
-		if ($inOtherMethods) {
+		if (!empty($inOtherMethods)) {
 			throw new MethodNotAllowedException;
 		}
 
@@ -137,7 +137,6 @@ class Dispatcher
 	/**
 	 * Register a new GET route into the dispatch stack.
 	 *
-	 * @param string $method
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
@@ -151,7 +150,6 @@ class Dispatcher
 	/**
 	 * Register a new POST route into the dispatch stack.
 	 *
-	 * @param string $method
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
@@ -165,7 +163,6 @@ class Dispatcher
 	/**
 	 * Register a new PUT route into the dispatch stack.
 	 *
-	 * @param string $method
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
@@ -179,7 +176,6 @@ class Dispatcher
 	/**
 	 * Register a new PATCH route into the dispatch stack.
 	 *
-	 * @param string $method
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
@@ -193,7 +189,6 @@ class Dispatcher
 	/**
 	 * Register a new DELETE route into the dispatch stack.
 	 *
-	 * @param string $method
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
@@ -207,7 +202,6 @@ class Dispatcher
 	/**
 	 * Register a new HEAD route into the dispatch stack.
 	 *
-	 * @param string $method
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
@@ -221,7 +215,6 @@ class Dispatcher
 	/**
 	 * Register a new OPTIONS route into the dispatch stack.
 	 *
-	 * @param string $method
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
@@ -235,12 +228,12 @@ class Dispatcher
 	/**
 	 * Register a new route into the dispatch stack for all given methods.
 	 *
-	 * @param string $method
+	 * @param array $methods
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
 	 */
-	public function map($methods, $action, $filter = [])
+	public function map($methods, $pattern, $action, $filter = [])
 	{
 		foreach ((array)$methods as $method) {
 			$this->register($method, $pattern, $action, $filter, $name);
@@ -250,7 +243,6 @@ class Dispatcher
 	/**
 	 * Register a new route into the dispatch stack for all methods.
 	 *
-	 * @param string $method
 	 * @param string $pattern
 	 * @param string|array $action
 	 * @param string|array $filter (optional)
@@ -327,7 +319,7 @@ class Dispatcher
 			}
 		}
 
-		return preg_replace_callback('/\((.+?)\)/', function ($match) use($parameters) {
+		return preg_replace_callback('/\((.+?)\)/', function () use($parameters) {
 			static $i = -1;
 			return $parameters[++$i];
 		}, $this->aliases[$name]);
@@ -350,9 +342,9 @@ class Dispatcher
 
 			if (isset($this->filters[$filter])) {
 				if ($this->filters[$filters] instanceof RouteFilterInterface) {
-					$pass = $this->filters[$filters]->call($route);
+					$pass = $this->filters[$filters]->call();
 				} else {
-					$pass = call_user_func($this->filters[$filters], $route);
+					$pass = $this->filters[$filters]();
 				}
 			}
 
