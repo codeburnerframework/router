@@ -1,4 +1,7 @@
 # Codeburner Routing System
+
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
+
 A fast route dispatcher package that enables you to build blazing fast applications for the web. Thank's to [Nikita Popov's](https://github.com/nikic/) for [this post](https://nikic.github.io/2014/02/18/Fast-request-routing-using-regular-expressions.html).
 
 ##Instalation
