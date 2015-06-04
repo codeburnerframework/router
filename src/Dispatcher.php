@@ -236,7 +236,7 @@ class Dispatcher
 	public function map($methods, $pattern, $action, $filter = [])
 	{
 		foreach ((array)$methods as $method) {
-			$this->register($method, $pattern, $action, $filter, $name);
+			$this->register($method, $pattern, $action, $filter);
 		}
 	}
 
