@@ -31,6 +31,9 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 		- [Route Pattern](#route-pattern)
 - [Action Types](#action-types)
     - [Class Methods](#class-methods)
+    	- [String Mode](#string-mode)
+    		- [Static Class Methods](#static-class-methods)
+		- [Array Mode](#array-mode)
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
     - [Named Functions](#name-functions)
 - [Request Methods](#request-methods)
@@ -86,20 +89,42 @@ By default a route pattern syntax is used where `{foo}` specified a placeholder 
 Actions are what will be executed if some route match the request, there are three ways to define this actions, see below.
 
 ####Class Methods
-In one MVC application you may wish to route to a controller.
+In one MVC application you may wish to route to a controller. To call a controller method you have some options see below:
 
+#####String Mode
+You could call on string mode, that will explode the string in the `@` delimiter and create a new instance of the class.
 ```php
-class MyController
-{
-
-	public function myMethod($name)
-	{
+class MyController {
+	public function myMethod($name) {
 		echo "Hello $name!";
 	}
-
 }
 
 $dispatcher->get('/account/{name}', 'MyController@myMethod');
+```
+
+######Static Class Methods
+When you need to call a static method you must change the `@` delimiter to `::`.
+```php
+class MyController {
+	public static function myMethod($name) {
+		echo "Hello $name!";
+	}
+}
+
+$dispatcher->get('/account/{name}', 'MyController::myMethod');
+```
+
+#####Array Mode
+Or you could pass an array with two elements, the first is the object and the second is the name of method.
+```php
+class MyController {
+	public function myMethod($name) {
+		echo "Hello $name!";
+	}
+}
+
+$dispatcher->get('/account/{name}', ['MyController', 'myMethod']);
 ```
 
 Sometimes you need to call a specific method for a especific route, you don't need to register lots of routes for that, only register a global route like this:
@@ -118,6 +143,7 @@ class MyController
 $dispatcher->get('/{entitie}/{id}', 'MyController@{entitie}');
 ```
 This will match `/method1/1` for example, and execute the `MyController@method1` action.
+
 
 ####Anonymous Functions/Closures
 

@@ -289,11 +289,19 @@ class Dispatcher
 		}
 
 		if (is_string($route['action'])) {
-			if (strpos($route['action'], '{') >= 0) {
+			if (strstr($route['action'], '{')) {
 				$route['action'] = $this->generateDinamicRouteAction($route);
 			}
 
-			$route['action'] = explode('@', $route['action']);
+			if (strstr($route['action'], '@')) {
+				$route['action'] = explode('@', $route['action']);
+				$route['action'][0] = new $route['action'][0];
+			} else {
+				if (strstr($route['action'], '::')) {
+					$route['action'] = explode('::', $route['action']);
+				}
+			}
+
 		}
 
 		return call_user_func_array($route['action'], isset($route['parameters']) ? $route['parameters'] : []);

@@ -16,6 +16,11 @@ class DispatcherTest extends PHPUnit_Framework_TestCase
 		return true;
 	}
 
+	public static function staticRouteActionStatic()
+	{
+		return true;
+	}
+
 	public function dinamicRouteAction($test)
 	{
 		return !is_null($test);
@@ -31,6 +36,13 @@ class DispatcherTest extends PHPUnit_Framework_TestCase
 	public function testActionTypeClassMethodString()
 	{
 		$this->dispatcher->get('/test', 'DispatcherTest@staticRouteAction');
+
+		$this->assertTrue( $this->dispatcher->dispatch('GET', '/test') );
+	}
+
+	public function testActionTypeStaticClassMethodString()
+	{
+		$this->dispatcher->get('/test', 'DispatcherTest::staticRouteAction');
 
 		$this->assertTrue( $this->dispatcher->dispatch('GET', '/test') );
 	}
