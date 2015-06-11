@@ -33,7 +33,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
     - [Class Methods](#class-methods)
     	- [String Mode](#string-mode)
     		- [Static Class Methods](#static-class-methods)
-		- [Array Mode](#array-mode)
+	- [Array Mode](#array-mode)
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
     - [Named Functions](#name-functions)
 - [Request Methods](#request-methods)
@@ -130,14 +130,10 @@ $dispatcher->get('/account/{name}', ['MyController', 'myMethod']);
 Sometimes you need to call a specific method for a especific route, you don't need to register lots of routes for that, only register a global route like this:
 
 ```php
-class MyController
-{
-
-	public function method1($id)
-	{
+class MyController {
+	public function method1($id) {
 		echo "id: $id";
 	}
-
 }
 
 $dispatcher->get('/{entitie}/{id}', 'MyController@{entitie}');
@@ -159,8 +155,7 @@ $dispatcher->post('/{entitie}/{id}/update', function ($entitie, $id) {
 The same way of [Anonymous Functions/Closures](#anonymous-functionsclosures) but you define a named function and pass his name as parameter.
 
 ```php
-function action1()
-{
+function action1() {
 	// execute the action logic...
 }
 
@@ -190,18 +185,12 @@ You may wish some routes to be accessible only for some users or request, you ca
 
 use Codeburner\Routing\RouteFilterInterface;
 
-class AuthFilter implements RouteFilterInterface
-{
-
-	public function handle()
-	{
+class AuthFilter implements RouteFilterInterface {
+	public function handle() {
 		if (!empty($_SESSION)) {
 			return true;
-		}
-
-		return false;
+		} else  return false;
 	}
-
 }
 
 $dispatcher->filter('auth', new AuthFilter);
