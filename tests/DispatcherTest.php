@@ -42,7 +42,7 @@ class DispatcherTest extends PHPUnit_Framework_TestCase
 
 	public function testActionTypeStaticClassMethodString()
 	{
-		$this->dispatcher->get('/test', 'DispatcherTest::staticRouteAction');
+		$this->dispatcher->get('/test', 'DispatcherTest::staticRouteActionStatic');
 
 		$this->assertTrue( $this->dispatcher->dispatch('GET', '/test') );
 	}
