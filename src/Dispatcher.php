@@ -48,7 +48,7 @@ class Dispatcher
 	/**
 	 * Try to find a route that matches the parameters and execute their callback.
 	 *
-	 * @return null|false if quiet is enabled the dispatch fail will return false.
+	 * @return mixed if quiet is enabled the dispatch fail will return false otherwise the response of callback will be returned.
 	 * @throws MethodNotAllowedException|NotFoundException
 	 */
 	public function dispatch($method, $uri, $quiet = false)
@@ -105,11 +105,8 @@ class Dispatcher
 	 */
 	public function register($method, $pattern, $action, $filter = [], $name = '')
 	{
-		$data = $this->parse($pattern);
-		$method = strtoupper($method);
-
 		if (isset($this->conditions['prefix'])) {
-			$data[0] = '/' . trim($this->conditions['prefix'], '/') . $data[0];
+			$pattern = '/' . trim($this->conditions['prefix'], '/') . $pattern;
 		}
 
 		if (isset($this->conditions['namespace'])) {
@@ -118,9 +115,12 @@ class Dispatcher
 			}
 		}
 
+		$data = $this->parse($pattern);
+		$method = strtoupper($method);
+
 		if ($this->isStaticRoute($data))
 		{
-			$this->registerRouteAlias($name, $pattern);
+			$this->alias($name, $pattern);
 			
 			$this->statics[$method][$data[0]] = ['action' => $action, 'filters' => (array) $filter];
 		} 
@@ -128,7 +128,7 @@ class Dispatcher
 		{
 			list($pattern, $parameters) = $this->generateRouteRegex($data);
 
-			$this->registerRouteAlias($name, $pattern);
+			$this->alias($name, $pattern);
 
 			$this->dinamics[$method][$pattern] = ['action' => $action, 'parameters' => $parameters, 'filters' => (array) $filter];
 		}
@@ -236,7 +236,7 @@ class Dispatcher
 	public function map($methods, $pattern, $action, $filter = [])
 	{
 		foreach ((array)$methods as $method) {
-			$this->register($method, $pattern, $action, $filter, $name);
+			$this->register($method, $pattern, $action, $filter);
 		}
 	}
 
@@ -263,6 +263,10 @@ class Dispatcher
 		$old_conditions = $this->conditions;
 
 		if (is_string($conditions)) {
+			if (isset($this->conditions['prefix'])) {
+				$conditions = $this->conditions['prefix'] . '/' . trim($conditions, '/');
+			}
+			
 			$conditions = ['prefix' => $conditions];
 		}
 
@@ -292,7 +296,7 @@ class Dispatcher
 			$route['action'] = explode('@', $route['action']);
 		}
 
-		call_user_func_array($route['action'], isset($route['parameters']) ? $route['parameters'] : []);
+		return call_user_func_array($route['action'], isset($route['parameters']) ? $route['parameters'] : []);
 	}
 
 	/**
@@ -323,6 +327,19 @@ class Dispatcher
 			static $i = -1;
 			return $parameters[++$i];
 		}, $this->aliases[$name]);
+	}
+
+	/**
+	 * Register a new name for a route.
+	 *
+	 * @param string $alias
+	 * @param string $pattern
+	 */
+	public function alias($alias, $pattern)
+	{
+		if (!empty($alias)) {
+			$this->aliases[$alias] = $pattern;
+		}
 	}
 
 	/**
@@ -375,19 +392,6 @@ class Dispatcher
 
 			return $match[0];
 		}, $route['action']);
-	}
-
-	/**
-	 * Register a new name for a route.
-	 *
-	 * @param string $alias
-	 * @param string $pattern
-	 */
-	protected function registerRouteAlias($alias, $pattern)
-	{
-		if (!empty($alias)) {
-			$this->aliases[$alias] = $pattern;
-		}
 	}
 
 	/**

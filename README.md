@@ -7,7 +7,7 @@ A fast route dispatcher package that enables you to build blazing fast applicati
 ##Instalation
 
 ###Manual
-[Download the zip](https://github.com/codeburnerframework/routing/archive/master.zip) and extract into your directory, then include the `src/bootstrap.php` file, and that's it!.
+[Download the zip](https://github.com/codeburnerframework/routing/archive/master.zip) and extract into your directory, then include the `src/dispatcher.php` file, and that's it!.
 
 ###Composer
 Add `codeburner/routing` to your `composer.json` file.
@@ -37,6 +37,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 - [Filtering Routes](#filtering-routes)
 - [Grouping Routes](#grouping-routes)
 - [Named Routes](#named-routes)
+	- [Defining Route Alias After Declaration](#defining_route_alias_after_declaration)
 - [Exceptions](#exceptions)
 	- [Not Found](#not-found)
 	- [Method not Allowed](#method-not-allowed)
@@ -213,7 +214,15 @@ $dispatcher->get('/dashboard/{page}', 'dashboardcontroller@page', [], 'dashboard
 
 the first link will generate a `/dashboard` route and the second will generate `/dashboard/thePageParameter`.
 
+####Defining Route Alias After Declaration
+```php
+$dispatcher->get('/dashboard', 'dashboardcontroller@home');
+// ...
+$dispatcher->alias('dashboard.home', '/dashboard');
+```
+
 ###Exceptions
+Exceptions will not be found if you have used the manual installation method, you need to include the especific file to have then throwed properly.
 ####Not Found
 Route not found exception `Codeburner\Routing\Exceptions\NotFoundException`
 ####Method not Allowed

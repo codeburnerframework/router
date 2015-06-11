@@ -13,5 +13,9 @@
 		"psr-4": {
 			"Codeburner\\Routing\\": "src"
 		}
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~4.0",
+		"phpspec/phpspec": "~2.1"
 	}
 }
