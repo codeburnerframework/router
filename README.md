@@ -1,4 +1,6 @@
 # Codeburner Routing System
+[![Build Status](https://img.shields.io/travis/codeburnerframework/routing/master.svg?style=flat-square)](https://travis-ci.org/codeburnerframework/routing)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
