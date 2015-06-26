@@ -172,7 +172,7 @@ namespace {
 		public function testGroupedNamespacedRoutes()
 		{
 			$this->dispatcher->group(['prefix' => 'test', 'namespace' => 'namespacetest'], function ($dispatcher) {
-				$dispatcher->get('/somepage', ['test', 'test'], [], '', true);
+				$dispatcher->get('/somepage', 'test@test', [], '', true);
 			});
 
 			$this->assertTrue( $this->dispatcher->dispatch('GET', '/test/somepage') );

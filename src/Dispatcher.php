@@ -275,6 +275,7 @@ class Dispatcher
 			} else {
 				$route['action'] = explode('::', $route['action']);
 			}
+
 		}
 
 		return call_user_func_array($route['action'], $route['parameters']);
