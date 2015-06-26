@@ -29,7 +29,7 @@ class Dispatcher
 	 *
 	 * @var array
 	 */
-	protected $conditions = [];
+	protected $conditions = ['prefix' => '', 'namespace' => '', 'filters' => []];
 
 	/**
 	 * All the registered filters to be used in some routes.
@@ -62,12 +62,8 @@ class Dispatcher
 
 		$dinamics = $this->generateDinamicRouteData();
 
-		if (isset($dinamics[$method])) {
-			$result = $this->dispatchDinamicRoute($dinamics[$method], $uri);
-
-			if ($result['found'] === true) {
-				return $this->call($result);
-			}
+		if (isset($dinamics[$method]) && $this->dispatchDinamicRoutes($dinamics[$method], $uri)['found']) {
+			return $this->call($result);
 		}
 
 		if ($quiet === true) {
@@ -88,13 +84,7 @@ class Dispatcher
 	 */
 	public function register($method, $pattern, $action, $filter = [], $name = '')
 	{
-		if (isset($this->conditions['prefix'])) {
-			$pattern = '/' . trim($this->conditions['prefix'], '/') . $pattern;
-		}
-
-		if (isset($this->conditions['namespace']) && is_string($action) && strstr($action, ['@', '::'])) {
-			$action = rtrim($this->conditions['namespace'], '\\') . '\\' . $action;
-		}
+		list($method, $pattern, $action, $filter, $name) = $this->applyGroupConditions($pattern, $action, $filter, $name);
 
 		$data = $this->parse(strtolower($pattern));
 		$method = strtoupper($method);
@@ -103,7 +93,7 @@ class Dispatcher
 		{
 			$this->alias($name, $pattern);
 			
-			$this->statics[$method][$data[0]] = ['action' => $action, 'parameters' => [], 'filters' => (array) $filter];
+			$this->statics[$method][$data[0]] = ['action' => $action, 'parameters' => [], 'filters' => $filter];
 		} 
 		else 
 		{
@@ -111,7 +101,7 @@ class Dispatcher
 
 			$this->alias($name, $pattern);
 
-			$this->dinamics[$method][$pattern] = ['action' => $action, 'parameters' => $parameters, 'filters' => (array) $filter];
+			$this->dinamics[$method][$pattern] = ['action' => $action, 'parameters' => $parameters, 'filters' => $filter];
 		}
 	}
 
@@ -360,6 +350,30 @@ class Dispatcher
 	}
 
 	/**
+	 * Apply global conditions to a route.
+	 *
+	 * @param string $pattern
+	 * @param string|array $action
+	 * @param string|array $filter
+	 *
+	 * @return array With $pattern, $action and $filter
+	 */
+	protected function generateConditionedRoute($pattern, $action, $filter, $name)
+	{
+		if (!empty($this->conditions['prefix'])) {
+			$pattern = '/' . trim($this->conditions['prefix'], '/') . $pattern;
+		}
+
+		if (!empty($this->conditions['namespace']) && is_string($action) && strstr($action, ['@', '::'])) {
+			$action = rtrim($this->conditions['namespace'], '\\') . '\\' . $action;
+		}
+
+		$filters = array_merge($this->conditions['filters'], (array) $filters);
+
+		return [$pattern, $action, $filters];
+	}
+
+	/**
 	 * Replace the action name variables with the route parameters.
 	 *
 	 * @param array $route Route data array.
@@ -525,7 +539,7 @@ class Dispatcher
 	 *
 	 * @return array With found, action and parameters keys.
 	 */
-	protected function dispatchDinamicRoute($routes, $uri)
+	protected function dispatchDinamicRoutes($routes, $uri)
 	{
 		foreach ($routes as $data) {
 			if (!preg_match($data['regex'], $uri, $matches)) {
@@ -573,11 +587,9 @@ class Dispatcher
         }
 
         foreach ($dinamics as $other_method => $data) {
-            if ($other_method == $method) continue;
-            
-            $result = $this->dispatchDinamicRoute($data, $uri);
-
-            if ($result[0] === true) $inOtherMethods[] = $other_method;
+        	if ($other_method != $method && $this->dispatchDinamicRoutes($data, $uri)['found']) {
+        		$inOtherMethods[] = $other_method;
+        	}
         }
 
         if (!empty($inOtherMethods)) {
