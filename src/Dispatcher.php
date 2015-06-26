@@ -53,6 +53,9 @@ class Dispatcher
 	 */
 	public function dispatch($method, $uri, $quiet = false)
 	{
+		$method = strtoupper($method);
+		$uri = strtolower($uri);
+
 		if (isset($this->statics[$method][$uri])) {
 			return $this->call($this->statics[$method][$uri]);
 		}
@@ -71,27 +74,7 @@ class Dispatcher
 			return false;
 		}
 
-		$inOtherMethods = [];
-
-		foreach ($this->statics as $other_method => $map) {
-			if ($other_method != $method && isset($map[$uri])) {
-				$inOtherMethods[] = $other_method;
-			}
-		}
-
-		foreach ($dinamics as $other_method => $data) {
-			if ($other_method == $method) continue;
-			
-			$result = $this->dispatchDinamicRoute($data, $uri);
-
-			if ($result[0] === true) $inOtherMethods[] = $other_method;
-		}
-
-		if (!empty($inOtherMethods)) {
-			throw new MethodNotAllowedException;
-		}
-
-		throw new NotFoundException;
+        $this->dispatchNotFoundRoute($method, $uri, $dinamics);
 	}
 
 	/**
@@ -109,20 +92,18 @@ class Dispatcher
 			$pattern = '/' . trim($this->conditions['prefix'], '/') . $pattern;
 		}
 
-		if (isset($this->conditions['namespace'])) {
-			if (is_string($action) && strpos($action, '@')) {
-				$action = rtrim($this->conditions['namespace'], '\\') . '\\' . $action;
-			}
+		if (isset($this->conditions['namespace']) && is_string($action) && strstr($action, ['@', '::'])) {
+			$action = rtrim($this->conditions['namespace'], '\\') . '\\' . $action;
 		}
 
-		$data = $this->parse($pattern);
+		$data = $this->parse(strtolower($pattern));
 		$method = strtoupper($method);
 
 		if ($this->isStaticRoute($data))
 		{
 			$this->alias($name, $pattern);
 			
-			$this->statics[$method][$data[0]] = ['action' => $action, 'filters' => (array) $filter];
+			$this->statics[$method][$data[0]] = ['action' => $action, 'parameters' => [], 'filters' => (array) $filter];
 		} 
 		else 
 		{
@@ -280,6 +261,7 @@ class Dispatcher
 	/**
 	 * Execute the given route action if no filter block the execution.
 	 *
+	 * @param array $route The route data array.
 	 * @return Response|string
 	 */
 	public function call($route)
@@ -297,14 +279,12 @@ class Dispatcher
 				$route['action'] = explode('@', $route['action']);
 				$route['action'][0] = new $route['action'][0];
 			} else {
-				if (strstr($route['action'], '::')) {
-					$route['action'] = explode('::', $route['action']);
-				}
+				$route['action'] = explode('::', $route['action']);
 			}
 
 		}
 
-		return call_user_func_array($route['action'], isset($route['parameters']) ? $route['parameters'] : []);
+		return call_user_func_array($route['action'], $route['parameters']);
 	}
 
 	/**
@@ -321,6 +301,9 @@ class Dispatcher
 	/**
 	 * Make an URi for the given route name.
 	 *
+	 * @param string $name The route name.
+	 * @param string $parameters The dinamic route parameters.
+	 *
 	 * @return string
 	 */
 	public function uri($name, $parameters = [])
@@ -331,7 +314,7 @@ class Dispatcher
 			}
 		}
 
-		return preg_replace_callback('/\((.+?)\)/', function () use($parameters) {
+		return preg_replace_callback('/\((.+?)\)/', function () use ($parameters) {
 			static $i = -1;
 			return $parameters[++$i];
 		}, $this->aliases[$name]);
@@ -353,15 +336,12 @@ class Dispatcher
 	/**
 	 * Execute the given route filters.
 	 *
-	 * @param array $filters
+	 * @param array|string $filters The filters name.
+	 * @throws UnauthorizedException
 	 */
 	protected function callRouteFilters($filters)
 	{
-		if (is_string($filters)) {
-			$filters = explode('|', $filters);
-		}
-
-		foreach ($filters as $filter)
+		foreach ((array) $filters as $filter)
 		{
 			$pass = false;
 
@@ -382,7 +362,7 @@ class Dispatcher
 	/**
 	 * Replace the action name variables with the route parameters.
 	 *
-	 * @param array $route
+	 * @param array $route Route data array.
 	 * @return array
 	 */
 	protected function generateDinamicRouteAction($route)
@@ -405,6 +385,7 @@ class Dispatcher
 	/**
 	 * Verify if the given route data is of an static route.
 	 *
+	 * @param array $data The route data array.
 	 * @return boolean
 	 */
 	protected function isStaticRoute($data)
@@ -419,6 +400,7 @@ class Dispatcher
 	/**
 	 * Parse the route pattern seeking for some parameter.
 	 *
+	 * @param string $pattern The route pattern.
 	 * @return array
 	 */
 	protected function parse($pattern)
@@ -449,6 +431,7 @@ class Dispatcher
 	/**
 	 * Create a new regex with a concatenation of all routes regex, for faster matching.
 	 *
+	 * @param array $data The route data array.
 	 * @return array
 	 */
 	protected function generateRouteRegex($data)
@@ -496,6 +479,7 @@ class Dispatcher
 	/**
 	 * Calculates the division size of the dinamic routes for faster matching.
 	 *
+	 * @param int $count Chunk count.
 	 * @return int
 	 */
 	protected function computeChunkSize($count)
@@ -509,6 +493,7 @@ class Dispatcher
 	 * Compute the dinamic routes chunks for increase performance of regex due to dummy groups
 	 * generate by self::generateRouteRegex.
 	 *
+	 * @param array $data The dinamic routes dinamic data.
 	 * @return array
 	 */
 	protected function computeDataChunk($data)
@@ -535,7 +520,10 @@ class Dispatcher
 	/**
 	 * Dispatch method of dinamic routes, its only an helper used by the real dispatch.
 	 *
-	 * @return array
+	 * @param array $routes The dinamic routes data array.
+	 * @param string $uri The uri to dispatch.
+	 *
+	 * @return array With found, action and parameters keys.
 	 */
 	protected function dispatchDinamicRoute($routes, $uri)
 	{
@@ -554,8 +542,8 @@ class Dispatcher
 			}
 
 			return [
-				'found' => true, 
-				'action' => $handler, 
+				'found' => true,
+				'action' => $handler,
 				'parameters' => $parameters
 			];
 		}
@@ -564,5 +552,39 @@ class Dispatcher
 			'found' => false
 		];
 	}
+
+	/**
+	 * Try to resolve the header if no route match the request.
+	 *
+	 * @param string $method   The request method.
+	 * @param string $uri      The request uri.
+	 * @param array  $dinamics The dinamic routes data.
+	 *
+	 * @throws MethodNotAllowedException|NotFoundException
+	 */
+    protected function dispatchNotFoundRoute($method, $uri, $dinamics)
+    {
+        $inOtherMethods = [];
+
+        foreach ($this->statics as $other_method => $map) {
+            if ($other_method != $method && isset($map[$uri])) {
+                $inOtherMethods[] = $other_method;
+            }
+        }
+
+        foreach ($dinamics as $other_method => $data) {
+            if ($other_method == $method) continue;
+            
+            $result = $this->dispatchDinamicRoute($data, $uri);
+
+            if ($result[0] === true) $inOtherMethods[] = $other_method;
+        }
+
+        if (!empty($inOtherMethods)) {
+            throw new MethodNotAllowedException;
+        }
+
+        throw new NotFoundException;
+    }
 
 }
