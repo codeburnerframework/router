@@ -275,7 +275,6 @@ class Dispatcher
 			} else {
 				$route['action'] = explode('::', $route['action']);
 			}
-
 		}
 
 		return call_user_func_array($route['action'], $route['parameters']);
@@ -588,25 +587,49 @@ class Dispatcher
 	 */
     protected function dispatchNotFoundRoute($method, $uri, $dinamics)
     {
-        $inOtherMethods = [];
-
-        foreach ($this->statics as $other_method => $map) {
-            if ($other_method != $method && isset($map[$uri])) {
-                $inOtherMethods[] = $other_method;
-            }
-        }
-
-        foreach ($dinamics as $other_method => $data) {
-        	if ($other_method != $method && $this->dispatchDinamicRoutes($data, $uri)['found']) {
-        		$inOtherMethods[] = $other_method;
-        	}
-        }
+        $inOtherMethods = $this->checkStaticRouteInOtherMethod($method, $uri);
+        $inOtherMethods = array_merge($inOtherMethods, $this->checkDinamicRouteInOtherMethod($method, $uri, $dinamics));
 
         if (!empty($inOtherMethods)) {
             throw new MethodNotAllowedException;
         }
 
         throw new NotFoundException;
+    }
+
+	/**
+	 * Check if static routes have similar patterns in other http methods.
+	 *
+	 * @param string $method   The request method.
+	 * @param string $uri      The request uri.
+	 */
+    protected function checkStaticRouteInOtherMethod($method, $uri)
+    {
+    	$inOtherMethods = [];
+    	foreach ($this->statics as $other_method => $map) {
+            if ($other_method != $method && isset($map[$uri])) {
+                $inOtherMethods[] = $other_method;
+            }
+        }
+        return $inOtherMethods;
+    }
+
+	/**
+	 * Check if dinamic routes have similar patterns in other http methods.
+	 *
+	 * @param string $method   The request method.
+	 * @param string $uri      The request uri.
+	 * @param array  $dinamics The dinamic routes data.
+	 */
+    protected function checkDinamicRouteInOtherMethod($method, $uri, $dinamics)
+    {
+    	$inOtherMethods = [];
+		foreach ($dinamics as $other_method => $data) {
+        	if ($other_method != $method && $this->dispatchDinamicRoutes($data, $uri)['found']) {
+        		$inOtherMethods[] = $other_method;
+        	}
+        }
+        return $inOtherMethods;
     }
 
 }
