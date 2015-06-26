@@ -62,8 +62,12 @@ class Dispatcher
 
 		$dinamics = $this->generateDinamicRouteData();
 
-		if (isset($dinamics[$method]) && $this->dispatchDinamicRoutes($dinamics[$method], $uri)['found']) {
-			return $this->call($result);
+		if (isset($dinamics[$method])) {
+			$result = $this->dispatchDinamicRoutes($dinamics[$method], $uri);
+
+			if ($result['found'] === true) {
+				return $this->call($result);
+			}
 		}
 
 		if ($quiet === true) {
@@ -84,7 +88,7 @@ class Dispatcher
 	 */
 	public function register($method, $pattern, $action, $filter = [], $name = '')
 	{
-		list($method, $pattern, $action, $filter, $name) = $this->applyGroupConditions($pattern, $action, $filter, $name);
+		list($pattern, $action, $filter) = $this->generateConditionedRoute($pattern, $action, $filter);
 
 		$data = $this->parse(strtolower($pattern));
 		$method = strtoupper($method);
@@ -354,11 +358,11 @@ class Dispatcher
 	 *
 	 * @param string $pattern
 	 * @param string|array $action
-	 * @param string|array $filter
+	 * @param string|array $filters
 	 *
-	 * @return array With $pattern, $action and $filter
+	 * @return array With $pattern, $action, and $filter
 	 */
-	protected function generateConditionedRoute($pattern, $action, $filter, $name)
+	protected function generateConditionedRoute($pattern, $action, $filters)
 	{
 		if (!empty($this->conditions['prefix'])) {
 			$pattern = '/' . trim($this->conditions['prefix'], '/') . $pattern;
