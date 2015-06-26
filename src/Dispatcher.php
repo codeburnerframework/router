@@ -275,7 +275,6 @@ class Dispatcher
 			} else {
 				$route['action'] = explode('::', $route['action']);
 			}
-
 		}
 
 		return call_user_func_array($route['action'], $route['parameters']);
@@ -340,10 +339,10 @@ class Dispatcher
 			$pass = false;
 
 			if (isset($this->filters[$filter])) {
-				if ($this->filters[$filters] instanceof RouteFilterInterface) {
-					$pass = $this->filters[$filters]->call();
+				if ($this->filters[$filter] instanceof RouteFilterInterface) {
+					$pass = $this->filters[$filter]->call();
 				} else {
-					$pass = $this->filters[$filters]();
+					$pass = $this->filters[$filter]();
 				}
 			}
 
@@ -368,8 +367,14 @@ class Dispatcher
 			$pattern = '/' . trim($this->conditions['prefix'], '/') . $pattern;
 		}
 
-		if (!empty($this->conditions['namespace']) && is_string($action) && strstr($action, ['@', '::'])) {
-			$action = rtrim($this->conditions['namespace'], '\\') . '\\' . $action;
+		if (!empty($this->conditions['namespace'])) {
+			$namespace = rtrim($this->conditions['namespace'], '\\'). '\\';
+
+			if (!is_string($action)) {
+				$action[0] = $namespace.$action[0];
+			} else {
+				$action = $namespace.$action;
+			}
 		}
 
 		$filters = array_merge($this->conditions['filters'], (array) $filters);
