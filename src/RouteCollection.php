@@ -16,7 +16,7 @@ namespace Codeburner\Router;
  * @author Alex Rohleder <alexrohleder96@outlook.com>
  * @see https://github.com/codeburnerframework/router
  */
-class RouteCollection // implements RouteCollectionInterface
+class RouteCollection implements RouteCollectionInterface
 {
 
     /**

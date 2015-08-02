@@ -86,6 +86,30 @@ namespace {
 			$this->assertTrue( $this->dispatcher->dispatch('get', '/test') );
 		}
 
+		public function testDividerChange()
+		{
+			$this->dispatcher->getStrategy()->setActionDivider('@');
+
+			$this->assertTrue($this->dispatcher->getStrategy()->getActionDivider() === '@');
+
+			$this->dispatcher->get('/{test}', 'DispatcherTest@staticRouteAction');
+
+			$this->assertTrue( $this->dispatcher->dispatch('get', '/test') );
+		}
+
+		public function testCollection()
+		{
+			$collection = new Codeburner\Router\RouteCollection;
+
+			$collection->set('get', '/test', 'DispatcherTest#staticRouteAction');
+
+			$dispatcher = new Codeburner\Router\Dispatcher(null, $collection);
+
+			$this->assertTrue( (bool) count($dispatcher->getCollection()->getStaticRoutes()) );
+
+			$this->assertTrue( $dispatcher->dispatch('get', '/test') );
+		}
+
 		public function testStaticNotFoundRoutes()
 		{
 	        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');

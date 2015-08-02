@@ -25,11 +25,8 @@ interface RouteCollectionInterface
      * @param string               $method  The HTTP method of route. {GET, POST, PUT, PATCH, DELETE}
      * @param string               $pattern The URi that route should match.
      * @param string|array|closure $action  The callback for when route is matched.
-     * @param string|array         $filter  The callback that will be called before the $action, 
-     *                                      if this return false the route won't be executed.
-     * @param string               $name    The Route name.
      */
-    public function set($method, $pattern, $action, $filter = null, $name = null);
+    public function set($method, $pattern, $action);
 
     /**
      * Find and return a static route.

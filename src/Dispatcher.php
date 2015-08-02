@@ -80,6 +80,7 @@ class Dispatcher
      *
      * @param array  $routes All the compiled data from dinamic routes.
      * @param string $uri    The URi of request.
+     *
      * @return array|false If the request match an array with the action and parameters will be returned
      *                     otherwide a false will.
      */
