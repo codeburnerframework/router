@@ -11,10 +11,6 @@ A fast route dispatcher package that enables you to build blazing fast applicati
 
 ##Instalation
 
-###Manual
-[Download the zip](https://github.com/codeburnerframework/Router/archive/master.zip) and extract into your directory, then include the `src/dispatcher.php` file, and that's it!.
-
-###Composer
 Add `codeburner/Router` to your `composer.json` file.
 
 ```json
