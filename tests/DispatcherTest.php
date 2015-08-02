@@ -166,6 +166,17 @@ namespace {
 			}
 		}
 
+		public function testExceptMethod()
+		{
+			$methods = ['put', 'patch'];
+
+			$this->dispatcher->except($methods, '/test', [$this, 'staticRouteAction']);
+
+			foreach (array_diff($this->methods, $methods) as $method) {
+				$this->assertTrue($this->dispatcher->dispatch($method, '/test'));
+			}
+		}
+
 		public function testDinamicRoutePattern()
 		{
 			$this->dispatcher->get('/{test:[0-9]+}', [$this, 'dinamicRouteAction']);
