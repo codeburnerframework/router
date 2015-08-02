@@ -1,7 +1,7 @@
 # Codeburner Router System
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![Build Status](https://img.shields.io/travis/codeburnerframework/routing/master.svg)](https://travis-ci.org/codeburnerframework/routing)
+[![Build Status](https://img.shields.io/travis/codeburnerframework/router/master.svg)](https://travis-ci.org/codeburnerframework/router)
 [![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
 [![Quality Score](https://img.shields.io/scrutinizer/g/codeburnerframework/routing.svg)](https://scrutinizer-ci.com/g/codeburnerframework/routing)
 
