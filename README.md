@@ -1,26 +1,26 @@
-# Codeburner Routing System
+# Codeburner Router System
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![Build Status](https://img.shields.io/travis/codeburnerframework/routing/master.svg)](https://travis-ci.org/codeburnerframework/routing)
-[![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
-[![Quality Score](https://img.shields.io/scrutinizer/g/codeburnerframework/routing.svg)](https://scrutinizer-ci.com/g/codeburnerframework/routing)
+[![Build Status](https://img.shields.io/travis/codeburnerframework/Router/master.svg)](https://travis-ci.org/codeburnerframework/Router)
+[![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/Router/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/Router/?branch=master)
+[![Quality Score](https://img.shields.io/scrutinizer/g/codeburnerframework/Router.svg)](https://scrutinizer-ci.com/g/codeburnerframework/Router)
 
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
-A fast route dispatcher package that enables you to build blazing fast applications for the web. Thank's to [Nikita Popov's](https://github.com/nikic/) for [this post](https://nikic.github.io/2014/02/18/Fast-request-routing-using-regular-expressions.html).
+A fast route dispatcher package that enables you to build blazing fast applications for the web. Thank's to [Nikita Popov's](https://github.com/nikic/) for [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
 
 ##Instalation
 
 ###Manual
-[Download the zip](https://github.com/codeburnerframework/routing/archive/master.zip) and extract into your directory, then include the `src/dispatcher.php` file, and that's it!.
+[Download the zip](https://github.com/codeburnerframework/Router/archive/master.zip) and extract into your directory, then include the `src/dispatcher.php` file, and that's it!.
 
 ###Composer
-Add `codeburner/routing` to your `composer.json` file.
+Add `codeburner/Router` to your `composer.json` file.
 
 ```json
 {
     "require": {
-        "codeburner/routing": "dev-master"
+        "codeburner/Router": "dev-master"
     }
 }
 ```
@@ -42,10 +42,6 @@ Don't forget to install or update the composer and include the `vendor/autoload.
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
     - [Named Functions](#name-functions)
 - [Request Methods](#request-methods)
-- [Filtering Routes](#filtering-routes)
-- [Grouping Routes](#grouping-routes)
-- [Named Routes](#named-routes)
-	- [Defining Route Alias After Declaration](#defining_route_alias_after_declaration)
 - [Exceptions](#exceptions)
 	- [Not Found](#not-found)
 	- [Method not Allowed](#method-not-allowed)
@@ -55,7 +51,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 After you have the classes ready to be instantiate, you only need to register the routes and call the dispatch method.
 
 ```php
-use Codeburner\Routing\Dispatcher;
+use Codeburner\Router\Dispatcher;
 
 $dispatcher = new Dispatcher;
 
@@ -67,7 +63,7 @@ $dispatcher->get('/', function () {
 $dispatcher->dispatch($_REQUEST['REQUEST_METHOD'], $_REQUEST['REQUEST_URI']);
 ```
 ###Routes
-The Codeburner Routing System have two types of routes, see below.
+The Codeburner Router System have two types of routes, see below.
 
 ####Static Routes
 The simplest way to define a route, all the path or `uri` is `static` and the action have no parameters.
@@ -97,7 +93,7 @@ Actions are what will be executed if some route match the request, there are thr
 In one MVC application you may wish to route to a controller. To call a controller method you have some options see below:
 
 #####String Mode
-You could call on string mode, that will explode the string in the `@` delimiter and create a new instance of the class.
+You could call on string mode, that will explode the string in the `#` delimiter and create a new instance of the class.
 ```php
 class MyController {
 	public function myMethod($name) {
@@ -105,19 +101,13 @@ class MyController {
 	}
 }
 
-$dispatcher->get('/account/{name}', 'MyController@myMethod');
+$dispatcher->get('/account/{name}', 'MyController#myMethod');
 ```
-
-######Static Class Methods
-When you need to call a static method you must change the `@` delimiter to `::`.
+You could change the delimiter by setting it like this:
 ```php
-class MyController {
-	public static function myMethod($name) {
-		echo "Hello $name!";
-	}
-}
-
-$dispatcher->get('/account/{name}', 'MyController::myMethod');
+$dispatcher->getStrategy()->setDelimiter('@');
+// so the new delimiter will be @
+$disptcher->get('/test', 'someController@someMethod');
 ```
 
 #####Array Mode
@@ -141,9 +131,9 @@ class MyController {
 	}
 }
 
-$dispatcher->get('/{entitie}/{id}', 'MyController@{entitie}');
+$dispatcher->get('/{entitie}/{id}', 'MyController#{entitie}');
 ```
-This will match `/method1/1` for example, and execute the `MyController@method1` action.
+This will match `/method1/1` for example, and execute the `MyController#method1` action.
 
 
 ####Anonymous Functions/Closures
@@ -171,81 +161,23 @@ $dispatcher->get('/', 'action1');
 The router has convenience methods for setting routes that will respond differently depending on the HTTP request method.
 
 ```php
-$dispatcher->get('/', 'controller@action');
-$dispatcher->post('/', 'controller@action');
-$dispatcher->put('/', 'controller@action');
-$dispatcher->patch('/', 'controller@action');
-$dispatcher->delete('/', 'controller@action');
-$dispatcher->head('/', 'controller@action');
-$dispatcher->options('/', 'controller@action');
-$dispatcher->any('/', 'controller@action'); // will match in any request method
-$dispatcher->map(['get', 'post'], '/', 'controller@action'); // will match in GET and POST requests
+$dispatcher->get('/', 'controller#action');
+$dispatcher->post('/', 'controller#action');
+$dispatcher->put('/', 'controller#action');
+$dispatcher->patch('/', 'controller#action');
+$dispatcher->delete('/', 'controller#action');
+$dispatcher->head('/', 'controller#action');
+$dispatcher->options('/', 'controller#action');
+$dispatcher->any('/', 'controller#action'); // will match in any request method
+$dispatcher->map(['get', 'post'], '/', 'controller#action'); // will match in GET and POST requests
 ```
 Each of the above routes will respond to the same URI but will invoke a different action based on the HTTP request method.
-
-###Filtering Routes
-You may wish some routes to be accessible only for some users or request, you can define this using the filter system.
-
-```php
-
-use Codeburner\Routing\RouteFilterInterface;
-
-class AuthFilter implements RouteFilterInterface {
-	public function handle() {
-		if (!empty($_SESSION)) {
-			return true;
-		} else  return false;
-	}
-}
-
-$dispatcher->filter('auth', new AuthFilter);
-$dispatcher->get('/dashboard', 'DashboardController@home', 'auth'); // Will only match if the $_SESSION exists.
-```
-You can define so many filter as you wish, define than as array or as string separating then with `|`.
-
-###Grouping Routes
-Commonly you have routes that have same filters, the same prefix, same controller namespace... You might merge then in one group.
-
-```php
-
-// These routes inside the anonymous function will be prefixed with "/user"
-$dispatcher->group('user', function ($dispatcher) {
-	$dispatcher->get('/', 'Path/to/Controller@index');
-	$dispatcher->get('/config', 'Path/to/Controller@config');
-});
-
-// And these routes will be prefixed with "dashboard", will have 2 filters, "auth" and "admin" and the controllers will be prefixed with "Path/To/Controllers/Folder"
-$dispatcher->group(['prefix' => 'dashboard', 'filters' => 'auth|admin', 'namespace' => 'Path/To/Controllers/Folder'], function ($dispacher) {
-	$dispatcher->get('/', 'DashboardController@index');
-	$dispatcher->get('/config', 'DashboardController@config');
-});
-```
-###Named Routes
-You can define a name for the routes, for the cases that you need to generate a dinamic URi for example:
-
-```php
-$dispatcher->get('/dashboard', 'dashboardcontroller@home', [], 'dashboard.home');
-$dispatcher->get('/dashboard/{page}', 'dashboardcontroller@page', [], 'dashboard.page')
-```
-```html
-<a href="<?php echo $dispatcher->uri('dashboard.home') ?>" alt="Dashboard">home</a>
-<a href="<?php echo $dispatcher->uri('dashboard.page', ['thePageParameter']) ?>" alt="Some Page">some page</a>
-```
-
-the first link will generate a `/dashboard` route and the second will generate `/dashboard/thePageParameter`.
-
-####Defining Route Alias After Declaration
-```php
-$dispatcher->get('/dashboard', 'dashboardcontroller@home');
-// ...
-$dispatcher->alias('dashboard.home', '/dashboard');
-```
 
 ###Exceptions
 Exceptions will not be found if you have used the manual installation method, you need to include the especific file to have then throwed properly.
 ####Not Found
-Route not found exception `Codeburner\Routing\Exceptions\NotFoundException`
+Route not found exception `Codeburner\Router\Exceptions\NotFoundException`
 ####Method not Allowed
-Route method is wrong `Codeburner\Routing\Exceptions\MethodNotAllowedException`
+Route method is wrong `Codeburner\Router\Exceptions\MethodNotAllowedException`
 ####Unauthorized
-A filter blocking the request passage `Codeburner\Routing\Exceptions\UnauthorizedException`
+A filter blocking the request passage `Codeburner\Router\Exceptions\UnauthorizedException`
