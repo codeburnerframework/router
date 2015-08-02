@@ -39,9 +39,6 @@ class RouteCollection implements RouteCollectionInterface
      * @param string               $method  The HTTP method of route. {GET, POST, PUT, PATCH, DELETE}
      * @param string               $pattern The URi that route should match.
      * @param string|array|closure $action  The callback for when route is matched.
-     * @param string|array         $filter  The callback that will be called before the $action, 
-     *                                      if this return false the route won't be executed.
-     * @param string               $name    The Route name.
      */
     public function set($method, $pattern, $action)
     {
@@ -66,7 +63,7 @@ class RouteCollection implements RouteCollectionInterface
             $pattern, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
         $params = [];
 
-        foreach ($matches as $match) {
+        foreach ((array) $matches as $match) {
             $pattern = str_replace($match[0][0], isset($match[2]) ? '(' . trim($match[2][0]) . ')' : '([^/]+)', $pattern);
             $params[$match[1][0]] = $match[1][0];
         }
@@ -94,7 +91,7 @@ class RouteCollection implements RouteCollectionInterface
      */
     public function getStaticRoutes($method = null)
     {
-        return $method && isset($this->statics[$method]) ? $this->statics[$method] : $this->statics;
+        return !empty($method) && isset($this->statics[$method]) ? $this->statics[$method] : $this->statics;
     }
 
     /**
@@ -105,7 +102,7 @@ class RouteCollection implements RouteCollectionInterface
      */
     public function getDinamicRoutes($method = null)
     {
-        return $method && isset($this->dinamics[$method]) ? $this->dinamics[$method] : $this->dinamics;
+        return !empty($method) && isset($this->dinamics[$method]) ? $this->dinamics[$method] : $this->dinamics;
     }
 
     /**

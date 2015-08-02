@@ -23,7 +23,7 @@ class UriDispatcherStrategy extends DispatcherStrategyAbstract implements Dispat
      * Dispache the matched route action.
      *
      * @param  string|array|closure $action The matched route action.
-     * @param  array                $param  The route parameters.
+     * @param  array                $params The route parameters.
      *
      * @return mixed The response of request.
      */

@@ -22,7 +22,7 @@ class Dispatcher
     /**
      * The action dispatch strategy object.
      *
-     * @var \Codeburner\Router\Strategies\DispacherstrategyInterface
+     * @var \Codeburner\Router\Strategies\DispatcherStrategyInterface
      */
     protected $strategy;
 
@@ -36,8 +36,8 @@ class Dispatcher
     /**
      * Construct the route dispatcher.
      *
-     * @param \Codeburner\Router\Strategies\DispacherstrategyInterface $strategy   The strategy to dispatch matched route action.
-     * @param \Codeburner\Router\RouteCollectionInterface              $collection The collection to save routes.
+     * @param \Codeburner\Router\Strategies\DispatcherStrategyInterface $strategy   The strategy to dispatch matched route action.
+     * @param \Codeburner\Router\RouteCollectionInterface               $collection The collection to save routes.
      */
     public function __construct(
         Strategies\DispatcherStrategyInterface $strategy = null, 
@@ -109,7 +109,7 @@ class Dispatcher
     /**
      * Generate an HTTP error request with method not allowed or not found.
      *
-     * @param array  $routes All the compiled data from dinamic routes.
+     * @param string $method The HTTP method that must not be checked.
      * @param string $uri    The URi of request.
      *
      * @throws \Codeburner\Router\Exceptions\NotFoundException
@@ -263,7 +263,7 @@ class Dispatcher
     /**
      * Register a route into given HTTP method(s).
      *
-     * @param string|array   $method  The method(s) that must be excluded.
+     * @param string|array   $methods The method(s) that must be excluded.
      * @param string         $pattern The URi pattern that should be matched.
      * @param string|closure $action  The action that must be executed in case of match.
      */
