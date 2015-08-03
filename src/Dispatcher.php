@@ -117,9 +117,9 @@ class Dispatcher
      */
     protected function dispatchNotFoundRoute($method, $uri)
     {
-        if ($this->checkStaticRouteInOtherMethods($method, $uri) 
-                || $this->checkDinamicRouteInOtherMethods($method, $uri)) {
-            throw new Exceptions\MethodNotAllowedException;
+        if ($sm = $this->checkStaticRouteInOtherMethods($method, $uri) 
+                || $dm = $this->checkDinamicRouteInOtherMethods($method, $uri)) {
+            throw new Exceptions\MethodNotAllowedException($method, $uri, array_merge((array) $sm, (array) $dm));
         }
 
         throw new Exceptions\NotFoundException;
@@ -130,17 +130,19 @@ class Dispatcher
      *
      * @param string $method The HTTP method that must not be checked
      * @param string $uri    The URi that must be matched.
-     * @return bool
+     * @return array
      */
     protected function checkStaticRouteInOtherMethods($method, $uri)
     {
+        $methods = [];
+
         foreach ($this->collection->getStaticRoutes() as $other_method => $routes) {
-            if ($other_method != $method && isset($routes[$uri])) {
-                return true;
+            if (!isset($methods[$other_method]) && $other_method != $method && isset($routes[$uri])) {
+                $methods[$other_method] = $routes[$uri];
             }
         }
 
-        return false;
+        return $methods;
     }
 
     /**
@@ -148,18 +150,22 @@ class Dispatcher
      *
      * @param string $method The HTTP method that must not be checked
      * @param string $uri    The URi that must be matched.
-     * @return bool
+     * @return array
      */
     protected function checkDinamicRouteInOtherMethods($method, $uri)
     {
+        $methods = [];
+
         foreach ($this->collection->getDinamicRoutes() as $other_method => $routes) {
-            if ($other_method != $method
-                    && $this->dispatchDinamicRoute($this->collection->getCompiledDinamicRoutes($other_method), $uri)) {
-                return true;
+            if (!isset($methods[$other_method]) 
+                    && $other_method != $method
+                        && $route = $this->dispatchDinamicRoute(
+                                $this->collection->getCompiledDinamicRoutes($other_method), $uri)) {
+                $methods[$other_method] = $route;
             }
         }
 
-        return false;
+        return $methods;
     }
 
     /**

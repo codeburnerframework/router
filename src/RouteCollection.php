@@ -43,6 +43,7 @@ class RouteCollection implements RouteCollectionInterface
     public function set($method, $pattern, $action)
     {
         $method = strtoupper($method);
+
         if (strpos($pattern, '{') !== false) {
             list($pattern, $params) = $this->parse($pattern);
             $this->dinamics[$method][$pattern] = ['action' => $action, 'params' => $params];
