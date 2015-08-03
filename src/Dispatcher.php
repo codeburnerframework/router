@@ -117,6 +117,8 @@ class Dispatcher
      */
     protected function dispatchNotFoundRoute($method, $uri)
     {
+        $dm = $dm = [];
+        
         if ($sm = $this->checkStaticRouteInOtherMethods($method, $uri) 
                 || $dm = $this->checkDinamicRouteInOtherMethods($method, $uri)) {
             throw new Exceptions\MethodNotAllowedException($method, $uri, array_merge((array) $sm, (array) $dm));
