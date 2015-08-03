@@ -122,7 +122,7 @@ class Dispatcher
             throw new Exceptions\MethodNotAllowedException($method, $uri, array_merge((array) $sm, (array) $dm));
         }
 
-        throw new Exceptions\NotFoundException;
+        throw new Exceptions\NotFoundException($method, $uri);
     }
 
     /**

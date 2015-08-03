@@ -69,4 +69,16 @@ class MethodNotAllowedException extends \Exception
         return isset($this->allowed_methods[strtoupper($method)]);
     }
 
+    /**
+     * The HTTP specification requires that a 405 Method Not Allowed response include the 
+     * Allow: header to detail available methods for the requested resource.
+     *
+     * @see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html section 14.7
+     * @return string
+     */
+    public function allowed()
+    {
+        return implode(', ', array_keys($this->allowed_methods));
+    }
+
 }
