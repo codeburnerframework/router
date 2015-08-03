@@ -16,9 +16,13 @@ Add `codeburner/Router` to your `composer.json` file.
 ```json
 {
     "require": {
-        "codeburner/Router": "dev-master"
+        "codeburner/router": "dev-master"
     }
 }
+```
+or via cli
+```
+$ composer require codeburner/router
 ```
 
 Don't forget to install or update the composer and include the `vendor/autoload.php` file.
@@ -30,10 +34,10 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 	- [Static Routes](#static-routes)
 	- [Dinamic Routes](#dinamic-routes)
 		- [Route Pattern](#route-pattern)
+    - [Optional Segments](#optional-segments)
 - [Action Types](#action-types)
     - [Class Methods](#class-methods)
     	- [String Mode](#string-mode)
-    		- [Static Class Methods](#static-class-methods)
 	- [Array Mode](#array-mode)
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
     - [Named Functions](#name-functions)
@@ -81,6 +85,15 @@ $dispatcher->get('/account/{name}', function ($name) {
 
 #####Route Pattern
 By default a route pattern syntax is used where `{foo}` specified a placeholder with name foo and matching the string `[^/]+`. To adjust the pattern the placeholder matches, you can specify a custom pattern by writing `{foo:[0-9]+}`. A custom pattern for a route placeholder must not use capturing groups. For example `{lang:(en|de)}` is not a valid placeholder, because `()` is a capturing group. Instead you can use either `{lang:en|de}` or `{lang:(?:en|de)}`.
+
+####Optional Segments
+For optinal segments in your routes use the `[` and `]` statement to embrace the optional part. Optional segments must only be in the end of pattern and close all opened `[` with `]`. For example:
+
+```php
+$dispatcher->get('/users/{id:\d+}[/{name}]', function ($id, $name = 'unknown') {
+    echo "Hello $name your id is $id.";
+});
+```
 
 ###Action Types
 Actions are what will be executed if some route match the request, there are three ways to define this actions, see below.
@@ -162,10 +175,9 @@ $dispatcher->post('/', 'controller#action');
 $dispatcher->put('/', 'controller#action');
 $dispatcher->patch('/', 'controller#action');
 $dispatcher->delete('/', 'controller#action');
-$dispatcher->head('/', 'controller#action');
-$dispatcher->options('/', 'controller#action');
 $dispatcher->any('/', 'controller#action'); // will match in any request method
-$dispatcher->map(['get', 'post'], '/', 'controller#action'); // will match in GET and POST requests
+$dispatcher->match(['get', 'post'], '/', 'controller#action'); // will match in GET and POST requests
+$dispatcher->except(['put', 'delete'], '/', 'controller#action'); // will match in any request method but put and delete.
 ```
 Each of the above routes will respond to the same URI but will invoke a different action based on the HTTP request method.
 
@@ -173,7 +185,36 @@ Each of the above routes will respond to the same URI but will invoke a differen
 Exceptions will not be found if you have used the manual installation method, you need to include the especific file to have then throwed properly.
 ####Not Found
 Route not found exception `Codeburner\Router\Exceptions\NotFoundException`
+
+```
+try {
+    $dispatcher->dispatch('post', 'foo');
+} catch (Codeburner\Router\Exceptions\NotFoundException $e) {
+    // show some not found page.
+    die("Request failed for method {$e->requested_method} and uri {$e->requested_uri}");
+}
+```
 ####Method not Allowed
 Route method is wrong `Codeburner\Router\Exceptions\MethodNotAllowedException`
+
+```
+$dispatcher->get('/foo', 'controller@action');
+
+try {
+    $dispatcher->dispatch('post', '/foo');
+} catch (Codeburner\Router\Exceptions\MethodNotAllowedException $e) {
+    // You can for example, redirect to the correct request.
+    // this if verify if the requested route can serve get requests.
+    if ($e->can('get')) {
+        // if so, dispatch into get method.
+        $dispatcher->dispatch('get', $e->requested_uri);
+    }
+}
+```
+
+> **NOTE:** The HTTP specification requires that a `405 Method Not Allowed` response include the
+`Allow:` header to detail available methods for the requested resource. For this you can get a
+string with a processed allowed methods by using the `allowed` method of this exception.
+
 ####Unauthorized
 A filter blocking the request passage `Codeburner\Router\Exceptions\UnauthorizedException`

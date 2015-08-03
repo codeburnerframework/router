@@ -29,7 +29,7 @@ class Dispatcher
     /**
      * The route collection.
      *
-     * @var \Codeburner\Router\RouteCollectionInterface
+     * @var \Codeburner\Router\RouteCollection
      */
     protected $collection;
 
@@ -37,11 +37,11 @@ class Dispatcher
      * Construct the route dispatcher.
      *
      * @param \Codeburner\Router\Strategies\DispatcherStrategyInterface $strategy   The strategy to dispatch matched route action.
-     * @param \Codeburner\Router\RouteCollectionInterface               $collection The collection to save routes.
+     * @param \Codeburner\Router\RouteCollection                        $collection The collection to save routes.
      */
     public function __construct(
         Strategies\DispatcherStrategyInterface $strategy = null, 
-        RouteCollectionInterface $collection = null
+        RouteCollection $collection = null
     ) {
         $this->strategy = $strategy ?: new Strategies\UriDispatcherStrategy;
         $this->collection = $collection ?: new RouteCollection;

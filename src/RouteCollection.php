@@ -16,8 +16,11 @@ namespace Codeburner\Router;
  * @author Alex Rohleder <alexrohleder96@outlook.com>
  * @see https://github.com/codeburnerframework/router
  */
-class RouteCollection implements RouteCollectionInterface
+class RouteCollection
 {
+
+    const DINAMIC_REGEX = '\{\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?::\s*([^{}]*(?:\{(?-1)\}[^{}]*)*))?\}';
+    const DEFAULT_PLACEHOLD_REGEX = '([^/]+)';
 
     /**
      * Routes without parameters.
@@ -43,13 +46,56 @@ class RouteCollection implements RouteCollectionInterface
     public function set($method, $pattern, $action)
     {
         $method = strtoupper($method);
+        $patterns = $this->parsePatternOptionals($pattern);
 
-        if (strpos($pattern, '{') !== false) {
-            list($pattern, $params) = $this->parse($pattern);
-            $this->dinamics[$method][$pattern] = ['action' => $action, 'params' => $params];
-        } else {
-            $this->statics[$method][$pattern]  = ['action' => $action, 'params' => []];
+        foreach ($patterns as $pattern){
+            if (strpos($pattern, '{') !== false) {
+
+                list($pattern, $params) = $this->parsePatternPlaceholders($pattern);
+                $this->dinamics[$method][$pattern] = ['action' => $action, 'params' => $params];
+
+            } else {
+
+                $this->statics[$method][$pattern]  = ['action' => $action, 'params' => []];
+
+            }
         }
+    }
+
+    /**
+     * Separate routes pattern with optional parts into n new patterns.
+     *
+     * @param string $pattern The route pattern to parse.
+     * @return array
+     */
+    protected function parsePatternOptionals($pattern)
+    {
+        $patternWithoutClosingOptionals = rtrim($pattern, ']');
+        $numOptionals = strlen($pattern) - strlen($patternWithoutClosingOptionals);
+
+        $segments = preg_split('~' . self::DINAMIC_REGEX . '(*SKIP)(*F) | \[~x', $patternWithoutClosingOptionals);
+
+        if ($numOptionals !== count($segments) - 1) {
+            if (preg_match('~' . self::DINAMIC_REGEX . '(*SKIP)(*F) | \]~x', $patternWithoutClosingOptionals)) {
+                throw new \Exception('Optional segments can only occur at the end of a route.');
+            }
+
+            throw new \Exception('Number of opening \'[\' and closing \']\' does not match.');
+        }
+
+        $current  = '';
+        $patterns = [];
+
+        foreach ($segments as $n => $segment) {
+            if ($segment === '' && $n !== 0) {
+                throw new \Exception('Empty optional part.');
+            }
+
+            $current .= $segment;
+            $patterns[] = $current;
+        }
+
+        return $patterns;
     }
 
     /**
@@ -58,14 +104,13 @@ class RouteCollection implements RouteCollectionInterface
      * @param string $pattern The route pattern to be parsed.
      * @return array 0 => new route regex, 1 => map of parameters names.
      */
-    protected function parse($pattern)
+    protected function parsePatternPlaceholders($pattern)
     {
-        preg_match_all('~\{\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?::\s*([^{}]*(?:\{(?-1)\}[^{}]*)*))?\}~x', 
-            $pattern, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+        preg_match_all('~' . self::DINAMIC_REGEX . '~x', $pattern, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
         $params = [];
 
         foreach ((array) $matches as $match) {
-            $pattern = str_replace($match[0][0], isset($match[2]) ? '(' . trim($match[2][0]) . ')' : '([^/]+)', $pattern);
+            $pattern = str_replace($match[0][0], isset($match[2]) ? '(' . trim($match[2][0]) . ')' : self::DEFAULT_PLACEHOLD_REGEX, $pattern);
             $params[$match[1][0]] = $match[1][0];
         }
 
