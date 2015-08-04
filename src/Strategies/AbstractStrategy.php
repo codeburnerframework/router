@@ -16,8 +16,18 @@ namespace Codeburner\Router\Strategies;
  * @author Alex Rohleder <alexrohleder96@outlook.com>
  * @see https://github.com/codeburnerframework/router
  */
-abstract class DispatcherStrategyAbstract
+abstract class AbstractStrategy
 {
+
+    /**
+     * Dispache the matched route action.
+     *
+     * @param  string|array|closure $action The matched route action.
+     * @param  array                $params The route parameters.
+     *
+     * @return mixed The response of request.
+     */
+    public abstract function dispatch($action, array $params);
 
     /**
      * String that will divide controller from methods in the action string.

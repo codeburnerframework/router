@@ -22,29 +22,27 @@ class Dispatcher
     /**
      * The action dispatch strategy object.
      *
-     * @var \Codeburner\Router\Strategies\DispatcherStrategyInterface
+     * @var \Codeburner\Router\Strategies\StrategyAbstract 
      */
     protected $strategy;
 
     /**
      * The route collection.
      *
-     * @var \Codeburner\Router\RouteCollection
+     * @var \Codeburner\Router\Collection
      */
     protected $collection;
 
     /**
      * Construct the route dispatcher.
      *
-     * @param \Codeburner\Router\Strategies\DispatcherStrategyInterface $strategy   The strategy to dispatch matched route action.
-     * @param \Codeburner\Router\RouteCollection                        $collection The collection to save routes.
+     * @param \Codeburner\Router\Collection                  $collector The collection to save routes.
+     * @param \Codeburner\Router\Strategies\StrategyAbstract $strategy  The strategy to dispatch matched route action.
      */
-    public function __construct(
-        Strategies\DispatcherStrategyInterface $strategy = null, 
-        RouteCollection $collection = null
-    ) {
-        $this->strategy = $strategy ?: new Strategies\UriDispatcherStrategy;
-        $this->collection = $collection ?: new RouteCollection;
+    public function __construct(Collection $collection = null, Strategies\StrategyAbstract $strategy = null)
+    {
+        $this->collection = $collection ?: new Collection;
+        $this->strategy   = $strategy   ?: new Strategies\UriStrategy;
     }
 
     /**
@@ -118,7 +116,7 @@ class Dispatcher
     protected function dispatchNotFoundRoute($method, $uri)
     {
         $dm = $dm = [];
-        
+
         if ($sm = $this->checkStaticRouteInOtherMethods($method, $uri) 
                 || $dm = $this->checkDinamicRouteInOtherMethods($method, $uri)) {
             throw new Exceptions\MethodNotAllowedException($method, $uri, array_merge((array) $sm, (array) $dm));
@@ -137,8 +135,9 @@ class Dispatcher
     protected function checkStaticRouteInOtherMethods($method, $uri)
     {
         $methods = [];
+        $staticRoutesCollection = $this->collection->getStaticRoutes();
 
-        foreach ($this->collection->getStaticRoutes() as $other_method => $routes) {
+        foreach ($staticRoutesCollection as $other_method => $routes) {
             if (!isset($methods[$other_method]) && $other_method != $method && isset($routes[$uri])) {
                 $methods[$other_method] = $routes[$uri];
             }
@@ -157,8 +156,9 @@ class Dispatcher
     protected function checkDinamicRouteInOtherMethods($method, $uri)
     {
         $methods = [];
+        $dinamicRoutesCollection = $this->collection->getDinamicRoutes();
 
-        foreach ($this->collection->getDinamicRoutes() as $other_method => $routes) {
+        foreach ($dinamicRoutesCollection as $other_method => $routes) {
             if (!isset($methods[$other_method]) 
                     && $other_method != $method
                         && $route = $this->dispatchDinamicRoute(
@@ -171,9 +171,9 @@ class Dispatcher
     }
 
     /**
-     * Get the collection of routes.
+     * Get the getCollection() of routes.
      *
-     * @return \Codeburner\Router\RouteCollection
+     * @return \Codeburner\Router\Collection
      */
     public function getCollection()
     {
@@ -183,103 +183,11 @@ class Dispatcher
     /**
      * Get the current dispatch strategy.
      *
-     * @return \Codeburner\Router\Strategy\DispatcherStrategyInterface
+     * @return \Codeburner\Router\Strategy\AbstractStrategy
      */
     public function getStrategy()
     {
         return $this->strategy;
-    }
-
-    /**
-     * Register a route into GET method.
-     *
-     * @param string         $pattern The URi pattern that should be matched.
-     * @param string|closure $action  The action that must be executed in case of match.
-     */
-    public function get($pattern, $action)
-    {
-        $this->collection->set('get', $pattern, $action);
-    }
-
-    /**
-     * Register a route into POST method.
-     *
-     * @param string         $pattern The URi pattern that should be matched.
-     * @param string|closure $action  The action that must be executed in case of match.
-     */
-    public function post($pattern, $action)
-    {
-        $this->collection->set('post', $pattern, $action);
-    }
-
-    /**
-     * Register a route into PUT method.
-     *
-     * @param string         $pattern The URi pattern that should be matched.
-     * @param string|closure $action  The action that must be executed in case of match.
-     */
-    public function put($pattern, $action)
-    {
-        $this->collection->set('put', $pattern, $action);
-    }
-
-    /**
-     * Register a route into PATCH method.
-     *
-     * @param string         $pattern The URi pattern that should be matched.
-     * @param string|closure $action  The action that must be executed in case of match.
-     */
-    public function patch($pattern, $action)
-    {
-        $this->collection->set('patch', $pattern, $action);
-    }
-
-    /**
-     * Register a route into DELETE method.
-     *
-     * @param string         $pattern The URi pattern that should be matched.
-     * @param string|closure $action  The action that must be executed in case of match.
-     */
-    public function delete($pattern, $action)
-    {
-        $this->collection->set('delete', $pattern, $action);
-    }
-
-    /**
-     * Register a route into all HTTP methods.
-     *
-     * @param string         $pattern The URi pattern that should be matched.
-     * @param string|closure $action  The action that must be executed in case of match.
-     */
-    public function any($pattern, $action)
-    {
-        $this->match(['get', 'post', 'put', 'patch', 'delete'], $pattern, $action);
-    }
-
-    /**
-     * Register a route into all HTTP methods except by $method.
-     *
-     * @param string|array   $method  The method(s) that must be excluded.
-     * @param string         $pattern The URi pattern that should be matched.
-     * @param string|closure $action  The action that must be executed in case of match.
-     */
-    public function except($method, $pattern, $action)
-    {
-        $this->match(array_diff(['get', 'post', 'put', 'patch', 'delete'], (array) $method), $pattern, $action);
-    }
-
-    /**
-     * Register a route into given HTTP method(s).
-     *
-     * @param string|array   $methods The method(s) that must be excluded.
-     * @param string         $pattern The URi pattern that should be matched.
-     * @param string|closure $action  The action that must be executed in case of match.
-     */
-    public function match($methods, $pattern, $action)
-    {
-        foreach ((array) $methods as $method) {
-            $this->collection->set($method, $pattern, $action);
-        }
     }
 
 }

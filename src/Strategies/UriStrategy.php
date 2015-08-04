@@ -16,7 +16,7 @@ namespace Codeburner\Router\Strategies;
  * @author Alex Rohleder <alexrohleder96@outlook.com>
  * @see https://github.com/codeburnerframework/router
  */
-interface DispatcherStrategyInterface
+class UriStrategy extends AbstractStrategy
 {
 
     /**
@@ -27,6 +27,9 @@ interface DispatcherStrategyInterface
      *
      * @return mixed The response of request.
      */
-    public function dispatch($action, array $params);
+    public function dispatch($action, array $params)
+    {
+        return call_user_func_array($this->resolve($action, $params), $params);
+    }
 
 }

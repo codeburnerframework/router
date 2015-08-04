@@ -16,7 +16,7 @@ namespace Codeburner\Router;
  * @author Alex Rohleder <alexrohleder96@outlook.com>
  * @see https://github.com/codeburnerframework/router
  */
-class RouteCollection
+class Collection
 {
 
     const DINAMIC_REGEX = '\{\s*([a-zA-Z][a-zA-Z0-9_]*)\s*(?::\s*([^{}]*(?:\{(?-1)\}[^{}]*)*))?\}';
@@ -77,10 +77,8 @@ class RouteCollection
 
         if ($numOptionals !== count($segments) - 1) {
             if (preg_match('~' . self::DINAMIC_REGEX . '(*SKIP)(*F) | \]~x', $patternWithoutClosingOptionals)) {
-                throw new \Exception('Optional segments can only occur at the end of a route.');
-            }
-
-            throw new \Exception('Number of opening \'[\' and closing \']\' does not match.');
+                   throw new \Exception('Optional segments can only occur at the end of a route.');
+            } else throw new \Exception('Number of opening \'[\' and closing \']\' does not match.');
         }
 
         $current  = '';
