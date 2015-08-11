@@ -54,14 +54,20 @@ class ConcreteControllerStrategy
      * e.g. getSomePage will generate a route to: GET some/page
      *
      * @param string|object $controller The controller name or representation.
+     * @param bool          $prefix     Dict if the controller name should prefix the path.
      */
-    public function controller($controller)
+    public function controller($controller, $prefix = true)
     {
         if (!$methods = get_class_methods($controller)) {
             throw new \Exception('The controller class coul\'d not be inspected.');
         }
 
         $methods = $this->getControllerMethods($methods);
+        $uprefix = '/';
+
+        if ($prefix === true) {
+            $uprefix .= $this->getControllerName($controller);
+        }
 
         foreach ($methods as $httpmethod => $classmethods) {
             foreach ($classmethods as $classmethod) {
@@ -70,7 +76,7 @@ class ConcreteControllerStrategy
                 $method  = $httpmethod . $classmethod;
                 $dinamic = $this->getMethodDinamicPattern($controller, $method);
 
-                $this->collector->match($httpmethod, '/' . $uri . $dinamic, $controller . '#' . $method);
+                $this->collector->match($httpmethod, $uprefix . $uri . $dinamic, $controller . '#' . $method);
             }
         }
     }
@@ -83,6 +89,20 @@ class ConcreteControllerStrategy
     public function getControllerAction($matches)
     {
         return strtolower(strlen($matches[1]) ? $matches[1] . '/' . $matches[2] : $matches[2]);
+    }
+
+    /**
+     * Get the controller name without the suffix Controller.
+     *
+     * @return string
+     */
+    public function getControllerName($controller)
+    {
+        if (is_object($controller)) {
+            $controller = get_class($controller);
+        }
+
+        return strtolower(strstr($controller, 'Controller', true));
     }
 
     /**
