@@ -50,6 +50,8 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 - [Dispatcher](#dispatcher)
     - [Basepath](#basepath)
     - [Dispatch Strategies](#dispatch-strategies)
+    	- [URI Strategy](#uri-strategy)
+    	- [Injector Strategy](#injector-strategy)
 - [Exceptions](#exceptions)
 	- [Not Found](#not-found)
 	- [Method not Allowed](#method-not-allowed)
@@ -215,6 +217,7 @@ $collector->match(['get', 'post'], '/', 'controller#action'); // will match in G
 $collector->except(['put', 'delete'], '/', 'controller#action'); // will match in any request method but put and delete.
 
 // Injecting Directly into Collection...
+
 $collection->set('GET', '/', 'controller#action');
 ```
 
@@ -248,9 +251,13 @@ class UserController {
      * @param integer $id
      */
     public function getBlogPost($id) {}
+```
 
+You can define a more specific constraint with the Match definition in the param comments:
+
+```php
+class UserController {
     /**
-     * You can define a more specific constraint with the Match definition in the param comments.
      * This will match to GET /user/blog/comment/{id:(\d{5})} like /user/blog/comment/98765
      *
      * @param integer $id Match (\d{5}) rest of the comment...
@@ -268,7 +275,7 @@ $collector->resource('PhotosController');
 
 The collector will create this routes for the `PhotosController` 
 
-HTTP Verb|Path|Controller#Action|Used For
+Method|Path|Controller#Action|Used For
 ---------|----|-----------------|--------
 GET | /photos | PhotosController#index | Display a list of all photos
 GET | /photos/make | PhotosController#make | Return an HTML form for creating a new photo
