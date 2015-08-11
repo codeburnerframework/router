@@ -186,7 +186,7 @@ Exceptions will not be found if you have used the manual installation method, yo
 ####Not Found
 Route not found exception `Codeburner\Router\Exceptions\NotFoundException`
 
-```
+```php
 try {
     $dispatcher->dispatch('post', 'foo');
 } catch (Codeburner\Router\Exceptions\NotFoundException $e) {
@@ -197,7 +197,7 @@ try {
 ####Method not Allowed
 Route method is wrong `Codeburner\Router\Exceptions\MethodNotAllowedException`
 
-```
+```php
 $dispatcher->get('/foo', 'controller@action');
 
 try {
