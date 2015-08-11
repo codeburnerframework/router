@@ -47,8 +47,9 @@ class Collection
     {
         $method = strtoupper($method);
         $patterns = $this->parsePatternOptionals($pattern);
+        $action = is_string($action) ? explode('#', $action) : $action;
 
-        foreach ($patterns as $pattern){
+        foreach ($patterns as $pattern) {
             if (strpos($pattern, '{') !== false) {
 
                 list($pattern, $params) = $this->parsePatternPlaceholders($pattern);
@@ -56,7 +57,7 @@ class Collection
 
             } else {
 
-                $this->statics[$method][$pattern]  = ['action' => $action, 'params' => []];
+                $this->statics[$method][$pattern] = ['action' => $action, 'params' => []];
 
             }
         }
@@ -74,13 +75,8 @@ class Collection
         $numOptionals = strlen($pattern) - strlen($patternWithoutClosingOptionals);
 
         $segments = preg_split('~' . self::DINAMIC_REGEX . '(*SKIP)(*F) | \[~x', $patternWithoutClosingOptionals);
-
-        if ($numOptionals !== count($segments) - 1) {
-            if (preg_match('~' . self::DINAMIC_REGEX . '(*SKIP)(*F) | \]~x', $patternWithoutClosingOptionals)) {
-                   throw new \Exception('Optional segments can only occur at the end of a route.');
-            } else throw new \Exception('Number of opening \'[\' and closing \']\' does not match.');
-        }
-
+        $this->checkSegmentsOptionals($segments, $numOptionals, $patternWithoutClosingOptionals);
+        
         $current  = '';
         $patterns = [];
 
@@ -94,6 +90,20 @@ class Collection
         }
 
         return $patterns;
+    }
+
+    /**
+     * Parse the pattern seeking for the error and show a more specific message.
+     *
+     * @throws \Exception With a more specific error message.
+     */
+    protected function checkSegmentsOptionals($segments, $numOptionals, $patternWithoutClosingOptionals)
+    {
+        if ($numOptionals !== count($segments) - 1) {
+            if (preg_match('~' . self::DINAMIC_REGEX . '(*SKIP)(*F) | \]~x', $patternWithoutClosingOptionals)) {
+                   throw new \Exception('Optional segments can only occur at the end of a route.');
+            } else throw new \Exception('Number of opening \'[\' and closing \']\' does not match.');
+        }
     }
 
     /**
