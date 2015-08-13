@@ -247,12 +247,12 @@ As you see the paths are prefixed with the controller name, it's a default, you 
 $collector->controller('UserController', false);
 ```
 
-You can define a more specific constraint with PHPDoc `@param` and the Match definition in the param comments:
+You can define a more specific constraint with [PHPDoc](http://www.phpdoc.org/) `@param` and the Match definition in the param comments:
 
 ```php
 class UserController {
     /**
-     * this will match to GET /user/blog/post/{id:\d} like /user/blog/post/123456789
+     * this will match to GET /user/blog/post/{id:\d+} like /user/blog/post/123456789
      *
      * @param integer $id
      */
@@ -310,7 +310,8 @@ In this case, all the normal routes except the route for destroy (a DELETE reque
 > **TIP:** If your application has many RESTFul routes, using `only` and `except` to generate only the routes that actually need can cut down on memory use and speed up the routing process.
  
 ###Making Collectors
-If you wanna a more specific way to define routes, you can make a class and register into the collector, the only requirement is to implement the `Codeburner\Router\Strategies\Collector\StrategyInterface`. For example if you wanna a more literal method to register routes like for example, match a `GET` request for a `/path` into `myController#myMethod`:
+If you need a more specific way to define routes, you can make a class and register into the collector, the only requirement is to implement the `Codeburner\Router\Strategies\Collector\StrategyInterface`.
+For example making a more literal way to define a `GET` request for a `/path` into `myController#myMethod`:
 
 ```php
 $collector->literal('GET /path to myMethod in myController');
