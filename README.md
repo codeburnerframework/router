@@ -238,10 +238,16 @@ class UserController {
     public function getSomeAttribute($id) {} // will match to GET /some/attribute/{id}
 }
 
-$collector->controller('MyController');
+$collector->controller('UserController');
 ```
 
-As you see the paths are prefixed with the controller name, it's a default, you can desable this passing a second argument to controller collector method with a false boolean.
+As you see the paths are prefixed with the controller name, it's a default, you can disable this passing a second argument to controller collector method with a false boolean, like above:
+
+```php
+$collector->controller('UserController', false);
+```
+
+You can define a more specific constraint with PHPDoc `@param` and the Match definition in the param comments:
 
 ```php
 class UserController {
@@ -251,12 +257,7 @@ class UserController {
      * @param integer $id
      */
     public function getBlogPost($id) {}
-```
-
-You can define a more specific constraint with the Match definition in the param comments:
-
-```php
-class UserController {
+    
     /**
      * This will match to GET /user/blog/comment/{id:(\d{5})} like /user/blog/comment/98765
      *
