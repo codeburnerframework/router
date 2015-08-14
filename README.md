@@ -327,7 +327,7 @@ class LiteralCollector implements StrategyInterface {
     public function literal($string) {
         $string = explode(' ', $string);
 
-        $this->collector->match($string[0], $string[1], "{$string[4]}#{$string[3]}");
+        $this->collector->match($string[0], $string[1], "{$string[5]}#{$string[3]}");
     }
 
     public function register(Collector $collector) {
