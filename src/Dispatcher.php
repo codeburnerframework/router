@@ -10,57 +10,12 @@
 
 namespace Codeburner\Router;
 
-use Codeburner\Router\DispatcherStrategyInterface as StrategyInterface;
-use Codeburner\Router\ConcreteUriStrategy as DefaultStrategy;
+use Codeburner\Router\Strategies\DispatcherStrategyInterface as StrategyInterface;
+use Codeburner\Router\Strategies\UriDispatcherStrategy as DefaultStrategy;
 use Codeburner\Router\Mapper as Collection;
 use Codeburner\Router\Exceptions\MethodNotAllowedException;
 use Codeburner\Router\Exceptions\NotFoundException;
 use Exception;
-
-/**
- * An interface that homogenizes all the dispatch strategies.
- *
- * @author Alex Rohleder <contato@alexrohleder.com.br>
- * @since 1.0.0
- */
-
-interface DispatcherStrategyInterface
-{
-
-    /**
-     * Dispatch the matched route action.
-     *
-     * @param string|array|closure $action The matched route action.
-     * @param array                $params The route parameters.
-     *
-     * @return mixed The response of request.
-     */
-
-    public function dispatch($action, array $params);
-}
-
-/**
- * Execute the matched route action with the parameters as args.
- *
- * @author Alex Rohleder <contato@alexrohleder.com.br>
- * @since 1.0.0
- */
-class ConcreteUriStrategy implements DispatcherStrategyInterface
-{
-
-    /**
-     * @inheritDoc
-     */
-    public function dispatch($action, array $params)
-    {
-        if (is_array($action)) {
-            return call_user_func_array([new $action[0], $action[1]], $params);
-        } else {
-            return call_user_func_array($action, $params);
-        }
-    }
-
-}
 
 /**
  * The dispatcher class is responsable to find and execute the callback
