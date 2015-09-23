@@ -1,5 +1,5 @@
 {
-	"name": "codeburner/Router",
+	"name": "codeburner/router",
 	"description": "The Codeburner framework Router system.",
 	"keywords": ["router", "dispacher", "codeburner"],
 	"license": "MIT",

@@ -1,39 +1,91 @@
-<?php
+<?php 
 
 /**
  * Codeburner Framework.
  *
- * @author Alex Rohleder <alexrohleder96@outlook.com>
+ * @author Alex Rohleder <contato@alexrohleder.com.br>
  * @copyright 2015 Alex Rohleder
  * @license http://opensource.org/licenses/MIT
  */
 
 namespace Codeburner\Router;
 
-use Codeburner\Router\Strategies\Dispatcher\StrategyInterface as DispatcherStrategyInterface;
-use Codeburner\Router\Strategies\Dispatcher\ConcreteUriStrategy as DefaultStrategy;
+use Codeburner\Router\ConcreteUriStrategy as DefaultStrategy;
+use Codeburner\Router\Mapper as Collection;
+use Codeburner\Router\Exceptions\MethodNotAllowedException;
+use Codeburner\Router\Exceptions\NotFoundException;
+use Exception;
 
 /**
- * Codeburner Router Component.
+ * An interface that homogenizes all the dispatch strategies.
  *
- * @author Alex Rohleder <alexrohleder96@outlook.com>
- * @see https://github.com/codeburnerframework/router
+ * @author Alex Rohleder <contato@alexrohleder.com.br>
+ * @since 1.0.0
  */
+
+interface DispatcherStrategyInterface
+{
+
+    /**
+     * Dispatch the matched route action.
+     *
+     * @param string|array|closure $action The matched route action.
+     * @param array                $params The route parameters.
+     *
+     * @return mixed The response of request.
+     */
+
+    public function dispatch($action, array $params);
+}
+
+/**
+ * Execute the matched route action with the parameters as args.
+ *
+ * @author Alex Rohleder <contato@alexrohleder.com.br>
+ * @since 1.0.0
+ */
+class ConcreteUriStrategy implements DispatcherStrategyInterface
+{
+
+    /**
+     * @inheritDoc
+     */
+    public function dispatch($action, array $params)
+    {
+        if (is_array($action)) {
+            return call_user_func_array([new $action[0], $action[1]], $params);
+        } else {
+            return call_user_func_array($action, $params);
+        }
+    }
+
+}
+
+/**
+ * The dispatcher class is responsable to find and execute the callback
+ * of the approprieted route for a given HTTP method and URI.
+ *
+ * @author Alex Rohleder <contato@alexrohleder.com.br>
+ * @since 1.0.0
+ */
+
 class Dispatcher
 {
 
     /**
      * The action dispatch strategy object.
      *
-     * @var \Codeburner\Router\Strategies\DispatcherStrategyInterface
+     * @var StrategyInterface
      */
+
     protected $strategy;
 
     /**
      * The route collection.
      *
-     * @var \Codeburner\Router\Collection
+     * @var Collection
      */
+
     protected $collection;
 
     /**
@@ -41,20 +93,22 @@ class Dispatcher
      *
      * @var string
      */
+
     protected $basepath;
 
     /**
      * Construct the route dispatcher.
      *
-     * @param string $basepath Define a URI prefix that must be excluded on matches.
-     * @param \Codeburner\Router\Collection $collection The collection to save routes.
-     * @param \Codeburner\Router\Strategies\DispatcherStrategyInterface $strategy The strategy to dispatch matched route action.
+     * @param Collection        $collection The collection to save routes.
+     * @param string            $basepath   Define a URI prefix that must be excluded on matches.
+     * @param StrategyInterface $strategy   The strategy to dispatch matched route action.
      */
-    public function __construct($basepath = '', Collection $collection = null, DispatcherStrategyInterface $strategy = null)
+
+    public function __construct(Collection $collection, $basepath = '', StrategyInterface $strategy = null)
     {
+        $this->collection = $collection;
         $this->basepath   = (string) $basepath;
-        $this->collection = $collection ?: new Collection;
-        $this->strategy   = $strategy   ?: new DefaultStrategy;
+        $this->strategy   = $strategy ?: new DefaultStrategy;
     }
 
     /**
@@ -62,34 +116,81 @@ class Dispatcher
      *
      * @param string $method The HTTP method of the request, that should be GET, POST, PUT, PATCH or DELETE.
      * @param string $uri    The URi of request.
-     * @param bool   $quiet  Should throw exception on match errors?
      *
      * @return mixed The request response
      */
-    public function dispatch($method, $uri, $quiet = false)
+
+    public function dispatch($method, $uri)
     {
-        $method = strtoupper($method);
-        $uri    = parse_url(substr(strstr(";$uri", ";{$this->basepath}"), strlen(";{$this->basepath}")), PHP_URL_PATH);
 
-        if ($route = $this->collection->getStaticRoute($method, $uri)) {
+        if ($route = $this->match($method, $uri)) {
             return $this->strategy->dispatch(
-                $route['action'], 
-                []
-            );
-        }
-
-        if ($route = $this->matchDinamicRoute($this->collection->getCompiledDinamicRoutes($method), $uri)) {
-            return $this->strategy->dispatch(
-                $this->resolveDinamicRouteAction($route['action'], $route['params']), 
+                $route['action'],
                 $route['params']
             );
         }
 
-        if ($quiet === true) {
-            return false;
+        $this->dispatchNotFoundRoute($method, $uri);
+    }
+
+    public function match($method, $uri)
+    {
+        $method = $this->getHttpMethod($method);
+        $uri = $this->getUriPath($uri);
+
+        if ($route = $this->collection->getStaticRoute($method, $uri)) {
+            return $route;
         }
 
-        $this->dispatchNotFoundRoute($method, $uri);
+        if ($route = $this->matchDinamicRoute($this->collection->getDinamicRoutes($method, $uri), $uri)) {
+            return [
+                'action' => $this->resolveDinamicRouteAction($route['action'], $route['params']),
+                'params' => $route['params']
+            ];
+        }
+
+        return false;
+    }
+
+    /**
+     * Verify if the given http method is valid.
+     *
+     * @param  int|string $method
+     * @throws Exception
+     * @return int
+     */
+
+    protected function getHttpMethod($method)
+    {
+        if (in_array($method, Mapper::$methods)) {
+            return $method;
+        }
+
+        if (in_array(strtolower($method), $methods = array_map('strtolower', array_flip(Mapper::$methods)))) {
+            return Mapper::$methods[$method];
+        }
+
+        throw new Exception('The HTTP method given to the route dispatcher is not supported or is incorrect.');
+    }
+
+    /**
+     * Get only the path of a given url or uri.
+     *
+     * @param string $uri The given URL
+     *
+     * @throws Exception
+     * @return string
+     */
+
+    protected function getUriPath($uri)
+    {
+        $path = parse_url(substr(strstr(';' . $uri, ';' . $this->basepath), strlen(';' . $this->basepath)), PHP_URL_PATH);
+
+        if ($path === false) {
+            throw new Exception('Seriously malformed URL passed to route dispatcher.');
+        }
+
+        return $path;
     }
 
     /**
@@ -101,6 +202,7 @@ class Dispatcher
      * @return array|false If the request match an array with the action and parameters will be returned
      *                     otherwide a false will.
      */
+
     protected function matchDinamicRoute($routes, $uri)
     {
         foreach ($routes as $route) {
@@ -108,16 +210,16 @@ class Dispatcher
                 continue;
             }
 
-            list($action, $params) = $route['map'][count($matches)];
+            list($routeAction, $routeParams) = $route['map'][count($matches)];
 
-            $parameters = [];
+            $params = [];
             $i = 0;
 
-            foreach ($params as $name) {
-                $parameters[$name] = $matches[++$i];
+            foreach ($routeParams as $name) {
+                $params[$name] = $matches[++$i];
             }
 
-            return ['action' => $action, 'params' => $parameters];
+            return ['action' => $routeAction, 'params' => $params];
         }
 
         return false;
@@ -129,69 +231,52 @@ class Dispatcher
      * @param string $method The HTTP method that must not be checked.
      * @param string $uri    The URi of request.
      *
-     * @throws \Codeburner\Router\Exceptions\NotFoundException
-     * @throws \Codeburner\Router\Exceptions\MethodNotAllowedException
+     * @throws NotFoundException
+     * @throws MethodNotAllowedException
      */
+
     protected function dispatchNotFoundRoute($method, $uri)
     {
         $dm = $dm = [];
 
         if ($sm = ($this->checkStaticRouteInOtherMethods($method, $uri)) 
                 || $dm = ($this->checkDinamicRouteInOtherMethods($method, $uri))) {
-            throw new Exceptions\MethodNotAllowedException($method, $uri, array_merge((array) $sm, (array) $dm));
+            throw new MethodNotAllowedException($method, $uri, array_merge((array) $sm, (array) $dm));
         }
 
-        throw new Exceptions\NotFoundException($method, $uri);
+        throw new NotFoundException($method, $uri);
     }
 
     /**
      * Verify if a static route match in another method than the requested.
      *
-     * @param string $method The HTTP method that must not be checked
-     * @param string $uri    The URi that must be matched.
+     * @param string $jump_method The HTTP method that must not be checked
+     * @param string $uri         The URi that must be matched.
      *
      * @return array
      */
-    protected function checkStaticRouteInOtherMethods($method, $uri)
+
+    protected function checkStaticRouteInOtherMethods($jump_method, $uri)
     {
-        $methods = [];
-        $staticRoutesCollection = $this->collection->getStaticRoutes();
-
-        unset($staticRoutesCollection[$method]);
-
-        foreach ($staticRoutesCollection as $method => $routes) {
-            if (!isset($methods[$method]) && isset($routes[$uri])) {
-                $methods[$method] = $routes[$uri];
-            }
-        }
-
-        return $methods;
+        return array_filter(array_diff_key(Mapper::$methods, [$jump_method => true]), function ($method) use ($uri) {
+            return (bool) $this->collection->getStaticRoute($method, $uri);
+        });
     }
 
     /**
      * Verify if a dinamic route match in another method than the requested.
      *
-     * @param string $method The HTTP method that must not be checked
-     * @param string $uri    The URi that must be matched.
+     * @param string $jump_method The HTTP method that must not be checked
+     * @param string $uri         The URi that must be matched.
      *
      * @return array
      */
-    protected function checkDinamicRouteInOtherMethods($method, $uri)
+
+    protected function checkDinamicRouteInOtherMethods($jump_method, $uri)
     {
-        $methods = [];
-        $dinamicRoutesCollection = $this->collection->getDinamicRoutes();
-
-        unset($dinamicRoutesCollection[$method]);
-
-        foreach ($dinamicRoutesCollection as $method => $routes) {
-            if (!isset($methods[$method]) 
-                    && $route = $this->matchDinamicRoute(
-                            $this->collection->getCompiledDinamicRoutes($method), $uri)) {
-                $methods[$method] = $route;
-            }
-        }
-
-        return $methods;
+        return array_filter(array_diff_key(Mapper::$methods, [$jump_method => true]), function ($method) use ($uri) {
+            return (bool) $this->matchDinamicRoute($this->collection->getDinamicRoutes($method, $uri), $uri);
+        });
     }
 
     /**
@@ -202,6 +287,7 @@ class Dispatcher
      *
      * @return string
      */
+
     protected function resolveDinamicRouteAction($action, $params)
     {
         if (is_array($action)) {
@@ -218,8 +304,9 @@ class Dispatcher
     /**
      * Get the getCollection() of routes.
      *
-     * @return \Codeburner\Router\Collection
+     * @return Collection
      */
+
     public function getCollection()
     {
         return $this->collection;
@@ -228,8 +315,9 @@ class Dispatcher
     /**
      * Get the current dispatch strategy.
      *
-     * @return \Codeburner\Router\Strategy\AbstractStrategy
+     * @return StrategyInterface
      */
+
     public function getStrategy()
     {
         return $this->strategy;
@@ -240,6 +328,7 @@ class Dispatcher
      *
      * @return string
      */
+
     public function getBasePath()
     {
         return $this->basepath;
@@ -251,6 +340,7 @@ class Dispatcher
      *
      * @param string $basepath The new basepath
      */
+    
     public function setBasePath($basepath)
     {
         $this->basepath = $basepath;

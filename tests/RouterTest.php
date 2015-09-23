@@ -1,50 +1,50 @@
 <?php
 
-class RouterrTest extends PHPUnit_Framework_TestCase
+use Codeburner\Router\Mapper;
+use Codeburner\Router\Dispatcher;
+
+class RouterTest extends PHPUnit_Framework_TestCase
 {
 
-	public $collection;
-	public $collector;
+	public $mapper;
 	public $dispatcher;
 	public $methods = ['get', 'post', 'put', 'patch', 'delete'];
 
 	public function setUp()
 	{
-		$this->collection = new Codeburner\Router\Collection;
-		$this->collector  = new Codeburner\Router\Collector($this->collection);
-		$this->dispatcher = new Codeburner\Router\Dispatcher('', $this->collection);
-
+		$this->mapper = new Codeburner\Router\Mapper;
+		$this->dispatcher = new Codeburner\Router\Dispatcher($this->mapper);
 		parent::setUp();
 	}
 
 	public function testActionTypeClassMethod()
 	{
-		$this->collector->get('/test', [new DummyController, 'staticRouteAction']);
+		$this->mapper->get('/test', 'DummyController#staticRouteAction');
 
-		$this->assertTrue( $this->dispatcher->dispatch('GET', '/test') );
+		$this->assertTrue( $this->dispatcher->dispatch('get', '/test') );
 	}
 
 	public function testActionTypeClassMethodString()
 	{
-		$this->collector->get('/test', 'DummyController#staticRouteAction');
+		$this->mapper->get('/test', 'DummyController#staticRouteAction');
 
-		$this->assertTrue( $this->dispatcher->dispatch('GET', '/test') );
+		$this->assertTrue( $this->dispatcher->dispatch('get', '/test') );
 	}
 
 	public function testActionTypeClosure()
 	{
-		$this->collector->get('/test', function () {
+		$this->mapper->get('/test', function () {
 			return true;
 		});
 
-		$this->assertTrue( $this->dispatcher->dispatch('GET', '/test') );
+		$this->assertTrue( $this->dispatcher->dispatch('get', '/test') );
 	}
 
 	public function testStaticRoutes()
 	{
 		foreach ($this->methods as $method)
 		{
-			$this->collector->match($method, '/test', [new DummyController, 'staticRouteAction']);
+			$this->mapper->$method('/test', 'DummyController#staticRouteAction');
 
 			$this->assertTrue( $this->dispatcher->dispatch($method, '/test') );
 		}
@@ -54,7 +54,7 @@ class RouterrTest extends PHPUnit_Framework_TestCase
 	{
 		foreach ($this->methods as $method)
 		{
-			$this->collector->$method('/{test}', [new DummyController, 'dinamicRouteAction']);
+			$this->mapper->$method('/{test}', 'DummyController#dinamicRouteAction');
 
 			$this->assertTrue( $this->dispatcher->dispatch($method, '/somedata') );
 		}
@@ -62,36 +62,25 @@ class RouterrTest extends PHPUnit_Framework_TestCase
 
 	public function testDinamicRouteAction()
 	{
-		$this->collector->get('/{test}', 'TestNamespace\{test}Controller#test');
+		$this->mapper->get('/{test}', 'TestNamespace\{test}Controller#test');
 
 		$this->assertTrue( $this->dispatcher->dispatch('get', '/test') );
-	}
-
-	public function testCollection()
-	{
-		$collection = new Codeburner\Router\Collection;
-
-		$collection->set('get', '/test', 'DummyController#staticRouteAction');
-
-		$dispatcher = new Codeburner\Router\Dispatcher('', $collection);
-
-		$this->assertTrue( $dispatcher->dispatch('get', '/test') );
 	}
 
 	public function testStaticNotFoundRoutes()
 	{
         $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
 
-		$this->collector->get('/test', [new DummyController, 'staticRouteAction']);
+		$this->mapper->get('/test', 'DummyController#staticRouteAction');
 
-		$this->dispatcher->dispatch('GET', '/test_e');
+		$this->dispatcher->dispatch('get', '/test_e');
 	}
 
 	public function testDinamicNotFoundRoutes()
 	{
         $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
 
-		$this->collector->get('/some/{test}', [new DummyController, 'dinamicRouteAction']);
+		$this->mapper->get('/some/{test}', 'DummyController#dinamicRouteAction');
 
 		$this->dispatcher->dispatch('get', '/test_e');
 	}
@@ -100,7 +89,7 @@ class RouterrTest extends PHPUnit_Framework_TestCase
 	{
         $this->setExpectedException('Codeburner\Router\Exceptions\MethodNotAllowedException');
 
-		$this->collector->post('/test', [new DummyController, 'staticRouteAction']);
+		$this->mapper->post('/test', 'DummyController#staticRouteAction');
 
 		$this->dispatcher->dispatch('get', '/test');
 	}
@@ -109,14 +98,14 @@ class RouterrTest extends PHPUnit_Framework_TestCase
 	{
         $this->setExpectedException('Codeburner\Router\Exceptions\MethodNotAllowedException');
 
-		$this->collector->post('/some/{test}', [new DummyController, 'dinamicRouteAction']);
+		$this->mapper->post('/some/{test}', 'DummyController#dinamicRouteAction');
 
 		$this->dispatcher->dispatch('get', '/some/test');
 	}
 
 	public function testAnyHttpMethodMethod()
 	{
-		$this->collector->any('/test', [new DummyController, 'staticRouteAction']);
+		$this->mapper->any('/test', 'DummyController#staticRouteAction');
 
 		foreach ($this->methods as $method) {
 			$this->assertTrue($this->dispatcher->dispatch($method, '/test'));
@@ -127,7 +116,7 @@ class RouterrTest extends PHPUnit_Framework_TestCase
 	{
 		$methods = ['get', 'post'];
 
-		$this->collector->match($methods, '/test', [new DummyController, 'staticRouteAction']);
+		$this->mapper->match($methods, '/test', 'DummyController#staticRouteAction');
 
 		foreach ($methods as $method) {
 			$this->assertTrue($this->dispatcher->dispatch($method, '/test'));
@@ -138,7 +127,7 @@ class RouterrTest extends PHPUnit_Framework_TestCase
 	{
 		$methods = ['put', 'patch'];
 
-		$this->collector->except($methods, '/test', [new DummyController, 'staticRouteAction']);
+		$this->mapper->except($methods, '/test', 'DummyController#staticRouteAction');
 
 		foreach (array_diff($this->methods, $methods) as $method) {
 			$this->assertTrue($this->dispatcher->dispatch($method, '/test'));
@@ -147,10 +136,12 @@ class RouterrTest extends PHPUnit_Framework_TestCase
 
 	public function testDinamicRoutePattern()
 	{
-		$this->collector->get('/{test:[0-9]+}', [new DummyController, 'dinamicRouteAction']);
+        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
 
-		$this->assertFalse( $this->dispatcher->dispatch('GET', '/someStringData', true) );
-		$this->assertTrue( $this->dispatcher->dispatch('GET', '/123') );
+		$this->mapper->get('/{test:[0-9]+}', 'DummyController#dinamicRouteAction');
+
+		$this->dispatcher->dispatch('get', '/someStringData');
+		$this->assertTrue( $this->dispatcher->dispatch('get', '/123') );
 	}
 
 }

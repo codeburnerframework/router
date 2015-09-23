@@ -1,15 +1,17 @@
 <?php
 
-class ControllerCollectorTest extends PHPUnit_Framework_TestCase
+use Codeburner\Router\Mapper;
+use Codeburner\Router\Dispatcher;
+
+class ControllerMapperTest extends PHPUnit_Framework_TestCase
 {
 
     public function setUp()
     {
-        $this->collection = new Codeburner\Router\Collection;
-        $this->collector  = new Codeburner\Router\Collector($this->collection);
-        $this->dispatcher = new Codeburner\Router\Dispatcher('', $this->collection);
+        $this->mapper = new Mapper;
+        $this->mapper->controller('ControllerCollectorResource', false);
 
-        $this->collector->controller('ControllerCollectorResource');
+        $this->dispatcher = new Dispatcher($this->mapper);
 
         parent::setUp();
     }
