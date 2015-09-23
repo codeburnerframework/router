@@ -54,6 +54,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
     - [Not Found](#not-found)
     - [Method not Allowed](#method-not-allowed)
 - [Benchmark](#benchmark)
+- [Todo](#todo)
 
 ##Base Knowledge
 First of all you need to understand some concepts of this project.
@@ -374,3 +375,11 @@ fastroute |first   |100     |9     |0.0168  |0.00047   |0.01728487
 codeburner|first   |100     |9     |0.0080  |0.00048   |0.00856208
 
 Where map time is the time cost for registering all the routes, match time is the cost for find the specific route, and usage time is the sum of map and match plus the time to execute the callback of the matched route. The codeburner results have an __average of 55% faster__ usage cost than the fastroute. Note that this is average values of a simple PHP script that can be found [here](https://gist.github.com/alexrohleder96/c6ba88234e51f301a1ab)
+
+##Todo
+- [Ruby concern concept](http://guides.rubyonrails.org/routing.html#routing-concerns).
+- Route especific dispatch strategy.
+- Respond all requests with a single route.
+- Default parameters to routes.
+- Grouped routes with prefix.
+- Neasted resources.
