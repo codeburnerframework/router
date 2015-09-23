@@ -1,9 +1,9 @@
 # Codeburner Router System
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![Build Status](https://img.shields.io/travis/codeburnerframework/router/master.svg)](https://travis-ci.org/codeburnerframework/router)
-[![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
-[![Quality Score](https://img.shields.io/scrutinizer/g/codeburnerframework/routing.svg)](https://scrutinizer-ci.com/g/codeburnerframework/routing)
+[![Build Status](https://travis-ci.org/codeburnerframework/router.svg?branch=v1.0.0)](https://travis-ci.org/codeburnerframework/router)
+[![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=v1.0.0)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=v1.0.0)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/quality-score.png?b=v1.0.0)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=v1.0.0)
 
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
