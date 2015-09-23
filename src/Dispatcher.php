@@ -10,6 +10,7 @@
 
 namespace Codeburner\Router;
 
+use Codeburner\Router\DispatcherStrategyInterface as StrategyInterface;
 use Codeburner\Router\ConcreteUriStrategy as DefaultStrategy;
 use Codeburner\Router\Mapper as Collection;
 use Codeburner\Router\Exceptions\MethodNotAllowedException;
@@ -166,7 +167,7 @@ class Dispatcher
             return $method;
         }
 
-        if (in_array(strtolower($method), $methods = array_map('strtolower', array_flip(Mapper::$methods)))) {
+        if (array_key_exists($method = strtolower($method), array_map('strtolower', Mapper::$methods))) {
             return Mapper::$methods[$method];
         }
 
