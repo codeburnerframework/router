@@ -578,31 +578,19 @@ trait ControllerMapper
     protected function getMethodConstraints($controller, $method)
     {
         $method = new \ReflectionMethod($controller, $method);
-        $uri    = '';
+        $buri  = '';
+        $euri  = '';
 
-        if ($parameters = $method->getParameters())
-        {
-            $count = count($parameters);
-            $types = $this->getParamsConstraint($method);
-
-            for ($i = 0; $i < $count; ++$i) {
-                $parameter = $parameters[$i];
-
-                if ($parameter->isOptional()) {
-                    $uri .= '[';
-                }
-
-                $uri .= $this->getUriConstraint($parameter, $types);
+        foreach ((array) $method->getParameters() as $parameter) {
+            if ($parameter->isOptional()) {
+                $buri .= '[';
+                $euri .= ']';
             }
 
-            for ($i = $i - 1; $i >= 0; --$i) {
-                if ($parameters[$i]->isOptional()) {
-                    $uri .= ']';
-                }
-            }
+            $buri .= $this->getUriConstraint($parameter, $types);
         }
 
-        return $uri;
+        return $buri . $euri;
     }
 
     /**
