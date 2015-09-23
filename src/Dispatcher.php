@@ -78,7 +78,6 @@ class Dispatcher
 
     public function dispatch($method, $uri)
     {
-
         if ($route = $this->match($method, $uri)) {
             return $this->strategy->dispatch(
                 $route['action'],
@@ -88,6 +87,15 @@ class Dispatcher
 
         $this->dispatchNotFoundRoute($method, $uri);
     }
+
+    /**
+     * Find a route that matches the given arguments.
+     * 
+     * @param string $method The HTTP method of the request, that should be GET, POST, PUT, PATCH or DELETE.
+     * @param string $uri    The URi of request.
+     *
+     * @return array|false
+     */
 
     public function match($method, $uri)
     {
