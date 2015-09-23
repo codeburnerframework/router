@@ -584,7 +584,7 @@ trait ControllerMapper
         if ($parameters = $method->getParameters()) {
             $types = $this->getParamsConstraint($method);
 
-            foreach ((array) $method->getParameters() as $parameter) {
+            foreach ($parameters as $parameter) {
                 if ($parameter->isOptional()) {
                     $buri .= '[';
                     $euri .= ']';
