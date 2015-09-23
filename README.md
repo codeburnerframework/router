@@ -360,7 +360,7 @@ try {
 string with a processed allowed methods by using the `allowed` method of this exception.
 
 ##Benchmark
-Codeburner Router system was compared to [Nikita's fast route](https://github.com/nikic/fastroute) and the results on an Core i5 3230m, Ram 8GB, SSD Kingston SH103S3120G with ubuntu 15.04. The tests have showed theses results:
+Codeburner Router system was compared to [Nikita's fast route](https://github.com/nikic/fastroute) and the results on an Core i5 3230m, Ram 8GB, SSD Kingston SH103S3120G with ubuntu 15.04 nginx 1.4.6 and php-fpm 5.5.9. The tests have showed theses results:
 
 package   |Matching|n routes|n args|map time|match time|usage time
 ----------|--------|--------|------|--------|----------|----------
@@ -373,4 +373,4 @@ codeburner|last    |100     |9     |0.0070  |0.00068   |0.00763726
 fastroute |first   |100     |9     |0.0168  |0.00047   |0.01728487
 codeburner|first   |100     |9     |0.0080  |0.00048   |0.00856208
 
-Where map time is the time cost for registering all the routes, match time is the cost for find the specific route, and usage time is the sum of map and match plus the time to execute the callback of the matched route. The codeburner results have an __average of 55% times faster__ usage cost than the fastroute. Note that this is average values of a simple PHP script that can be found [here](https://gist.github.com/alexrohleder96/c6ba88234e51f301a1ab)
+Where map time is the time cost for registering all the routes, match time is the cost for find the specific route, and usage time is the sum of map and match plus the time to execute the callback of the matched route. The codeburner results have an __average of 55% faster__ usage cost than the fastroute. Note that this is average values of a simple PHP script that can be found [here](https://gist.github.com/alexrohleder96/c6ba88234e51f301a1ab)
