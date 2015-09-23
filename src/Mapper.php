@@ -581,13 +581,17 @@ trait ControllerMapper
         $buri  = '';
         $euri  = '';
 
-        foreach ((array) $method->getParameters() as $parameter) {
-            if ($parameter->isOptional()) {
-                $buri .= '[';
-                $euri .= ']';
-            }
+        if ($parameters = $method->getParameters()) {
+            $types = $this->getParamsConstraint($method);
 
-            $buri .= $this->getUriConstraint($parameter, $types);
+            foreach ((array) $method->getParameters() as $parameter) {
+                if ($parameter->isOptional()) {
+                    $buri .= '[';
+                    $euri .= ']';
+                }
+
+                $buri .= $this->getUriConstraint($parameter, $types);
+            }
         }
 
         return $buri . $euri;
