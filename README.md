@@ -32,7 +32,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 - [Basic Usage](#basic-usage)
 - [Routes](#routes)
     - [Static Routes](#static-routes)
-    - [Dinamic Routes](#dinamic-routes)
+    - [Dynamic Routes](#dynamic-routes)
         - [Segments Constraints](#segments-constraints)
     - [Optional Segments](#optional-segments)
 - [Action Types](#action-types)
@@ -94,8 +94,8 @@ $mapper->get('/dashboard', function () {
 });
 ```
 
-###Dinamic Routes
-In the other hand the dinamic routes have some variables on the `uri`, this variables will be used as the action parameters. This definition will match if user request url like `yourdomain.com/account/alex` and will `echo` `Hello alex!`.
+###Dynamic Routes
+In the other hand the dynamic routes have some variables on the `uri`, this variables will be used as the action parameters. This definition will match if user request url like `yourdomain.com/account/alex` and will `echo` `Hello alex!`.
 
 ```php
 $mapper->get('/account/{name}', function ($name) {
