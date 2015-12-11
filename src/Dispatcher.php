@@ -12,7 +12,6 @@ namespace Codeburner\Router;
 
 use Codeburner\Router\Exceptions\BadRouteException;
 use Codeburner\Router\Strategies\DispatcherStrategyInterface as StrategyInterface;
-use Codeburner\Router\Strategies\UriDispatcherStrategy as DefaultStrategy;
 use Codeburner\Router\Mapper as Collection;
 use Codeburner\Router\Exceptions\MethodNotAllowedException;
 use Codeburner\Router\Exceptions\NotFoundException;
@@ -31,7 +30,7 @@ class Dispatcher
     /**
      * The action dispatch strategy object.
      *
-     * @var StrategyInterface
+     * @var string
      */
 
     protected $strategy;
@@ -60,11 +59,11 @@ class Dispatcher
      * @param string     $strategy   The strategy to dispatch matched route action.
      */
 
-    public function __construct(Collection $collection, $basepath = '', $strategy = '')
+    public function __construct(Collection $collection, $basepath = '', $strategy = 'Codeburner\Router\Strategies\UriDispatcherStrategy')
     {
         $this->collection = $collection;
         $this->basepath   = (string) $basepath;
-        $this->strategy   = $strategy ?: DefaultStrategy::class;
+        $this->strategy   = $strategy;
     }
 
     /**

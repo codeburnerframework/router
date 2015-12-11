@@ -551,7 +551,7 @@ trait ControllerMapper
             $methodObj = new \ReflectionMethod($controller, $methodName);
             $dynamic = $this->getMethodConstraints($methodObj);
 
-            $this->{$route[0]}($prefix . '/' . $uri . $dynamic, $controller . $delimiter . $methodName, $this->getMethodStrategy($methodObj));
+            $this->{$route[0]}($prefix . $uri . $dynamic, $controller . $delimiter . $methodName, $this->getMethodStrategy($methodObj));
         }
 
         return $this;
