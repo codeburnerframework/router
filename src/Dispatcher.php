@@ -18,8 +18,7 @@ use Codeburner\Router\Exceptions\NotFoundException;
 use Exception;
 
 /**
- * The dispatcher class is responsable to find and execute the callback
- * of the approprieted route for a given HTTP method and URI.
+ * The dispatcher class find and execute the callback of the appropriated route for a given HTTP method and URI.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
  * @since 1.0.0
@@ -106,9 +105,9 @@ class Dispatcher
             return $route;
         }
 
-        if ($route = $this->matchDinamicRoute($this->collection->getDinamicRoutes($method, $uri), $uri)) {
+        if ($route = $this->matchDynamicRoute($this->collection->getDynamicRoutes($method, $uri), $uri)) {
             return [
-                'action' => $this->resolveDinamicRouteAction($route['action'], $route['params']),
+                'action' => $this->resolveDynamicRouteAction($route['action'], $route['params']),
                 'params' => $route['params']
             ];
         }
@@ -126,12 +125,14 @@ class Dispatcher
 
     protected function getHttpMethod($method)
     {
-        if (in_array($method, Mapper::$methods)) {
+        $methods = Mapper::getMethods();
+
+        if (in_array($method, $methods)) {
             return $method;
         }
 
-        if (array_key_exists($method = strtolower($method), array_map('strtolower', Mapper::$methods))) {
-            return Mapper::$methods[$method];
+        if (array_key_exists($method = strtolower($method), array_map('strtolower', $methods))) {
+            return $methods[$method];
         }
 
         throw new Exception('The HTTP method given to the route dispatcher is not supported or is incorrect.');
@@ -158,16 +159,16 @@ class Dispatcher
     }
 
     /**
-     * Find and return the request dinamic route based on the compiled data and uri.
+     * Find and return the request dynamic route based on the compiled data and uri.
      *
-     * @param array  $routes All the compiled data from dinamic routes.
+     * @param array  $routes All the compiled data from dynamic routes.
      * @param string $uri    The URi of request.
      *
      * @return array|false If the request match an array with the action and parameters will be returned
-     *                     otherwide a false will.
+     *                     otherwise a false will.
      */
 
-    protected function matchDinamicRoute($routes, $uri)
+    protected function matchDynamicRoute($routes, $uri)
     {
         foreach ($routes as $route) {
             if (!preg_match($route['regex'], $uri, $matches)) {
@@ -204,7 +205,7 @@ class Dispatcher
         $dm = $dm = [];
 
         if ($sm = ($this->checkStaticRouteInOtherMethods($method, $uri)) 
-                || $dm = ($this->checkDinamicRouteInOtherMethods($method, $uri))) {
+                || $dm = ($this->checkDynamicRouteInOtherMethods($method, $uri))) {
             throw new MethodNotAllowedException($method, $uri, array_merge((array) $sm, (array) $dm));
         }
 
@@ -222,13 +223,13 @@ class Dispatcher
 
     protected function checkStaticRouteInOtherMethods($jump_method, $uri)
     {
-        return array_filter(array_diff_key(Mapper::$methods, [$jump_method => true]), function ($method) use ($uri) {
+        return array_filter(array_diff_key(Mapper::getMethods(), [$jump_method => true]), function ($method) use ($uri) {
             return (bool) $this->collection->getStaticRoute($method, $uri);
         });
     }
 
     /**
-     * Verify if a dinamic route match in another method than the requested.
+     * Verify if a dynamic route match in another method than the requested.
      *
      * @param string $jump_method The HTTP method that must not be checked
      * @param string $uri         The URi that must be matched.
@@ -236,23 +237,23 @@ class Dispatcher
      * @return array
      */
 
-    protected function checkDinamicRouteInOtherMethods($jump_method, $uri)
+    protected function checkDynamicRouteInOtherMethods($jump_method, $uri)
     {
-        return array_filter(array_diff_key(Mapper::$methods, [$jump_method => true]), function ($method) use ($uri) {
-            return (bool) $this->matchDinamicRoute($this->collection->getDinamicRoutes($method, $uri), $uri);
+        return array_filter(array_diff_key(Mapper::getMethods(), [$jump_method => true]), function ($method) use ($uri) {
+            return (bool) $this->matchDynamicRoute($this->collection->getDynamicRoutes($method, $uri), $uri);
         });
     }
 
     /**
-     * Resolve dinamic action, inserting route parameters at requested points.
+     * Resolve dynamic action, inserting route parameters at requested points.
      *
-     * @param string|array|closure $action The route action.
-     * @param array                $params The dinamic routes parameters.
+     * @param string|array|\closure $action The route action.
+     * @param array                $params The dynamic routes parameters.
      *
      * @return string
      */
 
-    protected function resolveDinamicRouteAction($action, $params)
+    protected function resolveDynamicRouteAction($action, $params)
     {
         if (is_array($action)) {
             foreach ($action as $key => $value) {
@@ -266,8 +267,6 @@ class Dispatcher
     }
 
     /**
-     * Get the getCollection() of routes.
-     *
      * @return Collection
      */
 
@@ -277,8 +276,6 @@ class Dispatcher
     }
 
     /**
-     * Get the current dispatch strategy.
-     *
      * @return StrategyInterface
      */
 
@@ -288,8 +285,6 @@ class Dispatcher
     }
 
     /**
-     * Get the actual base path of this dispatch.
-     *
      * @return string
      */
 
