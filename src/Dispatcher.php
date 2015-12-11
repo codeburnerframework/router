@@ -60,11 +60,11 @@ class Dispatcher
      * @param string     $strategy   The strategy to dispatch matched route action.
      */
 
-    public function __construct(Collection $collection, $basepath = '', $strategy = DefaultStrategy::class)
+    public function __construct(Collection $collection, $basepath = '', $strategy = '')
     {
         $this->collection = $collection;
         $this->basepath   = (string) $basepath;
-        $this->strategy   = $strategy;
+        $this->strategy   = $strategy ?: DefaultStrategy::class;
     }
 
     /**
