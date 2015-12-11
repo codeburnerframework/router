@@ -24,5 +24,6 @@ class BadRouteException extends \Exception
     const OPTIONAL_SEGMENTS_ON_MIDDLE = "Optional segments can only occur at the end of a route.";
     const UNCLOSED_OPTIONAL_SEGMENTS = "Number of opening [ and closing ] does not match.";
     const EMPTY_OPTIONAL_PARTS = "Empty optional part.";
+    const BAD_DISPATCH_STRATEGY = "The route specific dispatch strategy is wrong. Check the class name.";
 
 }

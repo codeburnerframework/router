@@ -10,6 +10,7 @@
 
 namespace Codeburner\Router;
 
+use Codeburner\Router\Exceptions\BadRouteException;
 use Codeburner\Router\Strategies\DispatcherStrategyInterface as StrategyInterface;
 use Codeburner\Router\Strategies\UriDispatcherStrategy as DefaultStrategy;
 use Codeburner\Router\Mapper as Collection;
@@ -54,16 +55,16 @@ class Dispatcher
     /**
      * Construct the route dispatcher.
      *
-     * @param Collection        $collection The collection to save routes.
-     * @param string            $basepath   Define a URI prefix that must be excluded on matches.
-     * @param StrategyInterface $strategy   The strategy to dispatch matched route action.
+     * @param Collection $collection The collection to save routes.
+     * @param string     $basepath   Define a URI prefix that must be excluded on matches.
+     * @param string     $strategy   The strategy to dispatch matched route action.
      */
 
-    public function __construct(Collection $collection, $basepath = '', StrategyInterface $strategy = null)
+    public function __construct(Collection $collection, $basepath = '', $strategy = DefaultStrategy::class)
     {
         $this->collection = $collection;
         $this->basepath   = (string) $basepath;
-        $this->strategy   = $strategy ?: new DefaultStrategy;
+        $this->strategy   = $strategy;
     }
 
     /**
@@ -72,16 +73,16 @@ class Dispatcher
      * @param string $method The HTTP method of the request, that should be GET, POST, PUT, PATCH or DELETE.
      * @param string $uri    The URi of request.
      *
+     * @throws NotFoundException
+     * @throws MethodNotAllowedException
      * @return mixed The request response
      */
 
     public function dispatch($method, $uri)
     {
         if ($route = $this->match($method, $uri)) {
-            return $this->strategy->dispatch(
-                $route['action'],
-                $route['params']
-            );
+            $strategy = $this->getRouteStrategy($route['strategy']);
+            return $strategy->dispatch($route['action'], $route['params']);
         }
 
         $this->dispatchNotFoundRoute($method, $uri);
@@ -105,14 +106,7 @@ class Dispatcher
             return $route;
         }
 
-        if ($route = $this->matchDynamicRoute($this->collection->getDynamicRoutes($method, $uri), $uri)) {
-            return [
-                'action' => $this->resolveDynamicRouteAction($route['action'], $route['params']),
-                'params' => $route['params']
-            ];
-        }
-
-        return false;
+        return $this->matchDynamicRoute($this->collection->getDynamicRoutes($method, $uri), $uri);
     }
 
     /**
@@ -175,7 +169,7 @@ class Dispatcher
                 continue;
             }
 
-            list($routeAction, $routeParams) = $route['map'][count($matches)];
+            list($routeAction, $routeParams, $strategy) = $route['map'][count($matches)];
 
             $params = [];
             $i = 0;
@@ -184,7 +178,7 @@ class Dispatcher
                 $params[$name] = $matches[++$i];
             }
 
-            return ['action' => $routeAction, 'params' => $params];
+            return ['action' => $this->resolveDynamicRouteAction($routeAction, $params), 'params' => $params, 'strategy' => $strategy];
         }
 
         return false;
@@ -303,6 +297,25 @@ class Dispatcher
     public function setBasePath($basepath)
     {
         $this->basepath = $basepath;
+    }
+
+    /**
+     * @param string $strategy
+     * @throws BadRouteException
+     * @return \Codeburner\Router\Strategies\DispatcherStrategyInterface
+     */
+
+    private function getRouteStrategy($strategy)
+    {
+        if ($strategy === null) {
+            return new $this->strategy;
+        }
+
+        if (class_exists($strategy)) {
+            return new $strategy;
+        }
+
+        throw new BadRouteException(BadRouteException::BAD_DISPATCH_STRATEGY);
     }
 
 }

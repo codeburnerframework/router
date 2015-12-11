@@ -248,6 +248,14 @@ class UserController {
      * @param integer $id Match (\d{5}) rest of the comment...
      */
     public function getBlogComment($id) {}
+
+    /**
+     * And you can define a specific strategy for a route like this
+     *
+     * @strategy My\Specific\Dispatch\Strategy
+     * ...
+     */
+    public function getBlogTag($id) {}
 }
 ```
 
@@ -313,7 +321,8 @@ The dispatcher will find a route that match the given HTTP method and URI, and u
 An important point of dispatcher is that it can remove the basepath prefix from the routes that you wanna match, for this the first parameter of the dispatcher should be a string with the basepath.
 
 ###Dispatch Strategies
-Sometimes a especific action must receive a especific information, like the route parameters, or a dependency from the container. You can define this with the second parameter of the dispatcher that must be an implementation of `Codeburner\Router\StrategyInterface`.
+Sometimes a especific action must receive a especific information, like the route parameters, or a dependency from the container.
+You can define this in two ways, with the second parameter of the dispatcher that must be an implementation of `Codeburner\Router\StrategyInterface` that will apply this strategy for all routes, or, pass the third argument for the [mapper request methods](#request-methods) or even define in [comments of controller](#controller-collector) and this strategy will apply only for a choosen route.
 
 ####URI Strategy
 This dispatch strategy will give your actions all the parameters of route, and this is the __default__ strategy used.
@@ -377,9 +386,9 @@ codeburner|first   |100     |9     |0.0080  |0.00048   |0.00856208
 Where map time is the time cost for registering all the routes, match time is the cost for find the specific route, and usage time is the sum of map and match plus the time to execute the callback of the matched route. The codeburner results have an __average of 55% faster__ usage cost than the fastroute. Note that this is average values of a simple PHP script that can be found [here](https://gist.github.com/alexrohleder96/c6ba88234e51f301a1ab)
 
 ##Todo
-- [Ruby concern concept](http://guides.rubyonrails.org/routing.html#routing-concerns).
-- Route especific dispatch strategy.
-- Respond all requests with a single route.
-- Default parameters to routes.
-- Grouped routes with prefix.
-- Nested resources.
+- [ ] [Ruby concern concept](http://guides.rubyonrails.org/routing.html#routing-concerns).
+- [x] Route especific dispatch strategy.
+- [ ] Respond all requests with a single route.
+- [ ] Default parameters to routes.
+- [ ] Grouped routes with prefix.
+- [ ] Nested resources.

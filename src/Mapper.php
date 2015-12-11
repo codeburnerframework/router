@@ -132,56 +132,61 @@ class Mapper
     /**
      * Insert a route into the collection.
      *
-     * @param int                   $method  The HTTP method zone of route. {GET, POST, PUT, PATCH, DELETE}
-     * @param string                $pattern The URi that route should match.
-     * @param string|array|\closure $action  The callback for when route is matched.
+     * @param int                   $method   The HTTP method zone of route. {GET, POST, PUT, PATCH, DELETE}
+     * @param string                $pattern  The URi that route should match.
+     * @param string|array|\closure $action   The callback for when route is matched.
+     * @param string                $strategy The route specific dispatch strategy.
      */
 
-    public function set($method, $pattern, $action)
+    public function set($method, $pattern, $action, $strategy = null)
     {
         $patterns = $this->parsePatternOptionals($pattern);
         $action = $this->parseAction($action);
 
         foreach ($patterns as $pattern) {
             strpos($pattern, '{') === false ?
-                $this->setStatic($method, $pattern, $action) : $this->setDynamic($method, $pattern, $action);
+                $this->setStatic($method, $pattern, $action, $strategy) : $this->setDynamic($method, $pattern, $action, $strategy);
         }
     }
 
     /**
      * Insert a static route into the collection.
      *
-     * @param string                $method  The HTTP method of route. {GET, POST, PUT, PATCH, DELETE}
-     * @param string                $pattern The URi that route should match.
-     * @param string|array|\closure $action  The callback for when route is matched.
+     * @param string                $method   The HTTP method of route. {GET, POST, PUT, PATCH, DELETE}
+     * @param string                $pattern  The URi that route should match.
+     * @param string|array|\closure $action   The callback for when route is matched.
+     * @param string                $strategy The route specific dispatch strategy.
      */
 
-    protected function setStatic($method, $pattern, $action)
+    protected function setStatic($method, $pattern, $action, $strategy)
     {
         $this->statics[$method][$pattern] = [
-            'action' => $action,
-            'params' => []
+            'action'   => $action,
+            'params'   => [],
+            'strategy' => $strategy
         ];
     }
 
     /**
      * Insert a dynamic route into the collection.
      *
-     * @param string                $method  The HTTP method of route. {GET, POST, PUT, PATCH, DELETE}
-     * @param string                $pattern The URi that route should match.
-     * @param string|array|\closure $action  The callback for when route is matched.
+     * @param string                $method   The HTTP method of route. {GET, POST, PUT, PATCH, DELETE}
+     * @param string                $pattern  The URi that route should match.
+     * @param string|array|\closure $action   The callback for when route is matched.
+     * @param string                $strategy The route specific dispatch strategy.
      */
 
-    protected function setDynamic($method, $pattern, $action)
+    protected function setDynamic($method, $pattern, $action, $strategy)
     {
         $index = $this->getDynamicIndex($method, $pattern);
 
         list($regex, $params) = $this->parsePatternPlaceholders($pattern);
 
         $this->dynamics[$index][] = [
-            'action'  => $action,
-            'regex' => $regex,
-            'params'  => $params
+            'action'   => $action,
+            'regex'    => $regex,
+            'params'   => $params,
+            'strategy' => $strategy
         ];
     }
 
@@ -299,7 +304,7 @@ class Mapper
             $paramsCount      = count($route['params']);
             $groupCount       = max($groupCount, $paramsCount) + 1;
             $regex[]          = $route['regex'] . str_repeat('()', $groupCount - $paramsCount - 1);
-            $map[$groupCount] = [$route['action'], $route['params']];
+            $map[$groupCount] = [$route['action'], $route['params'], $route['strategy']];
         }
 
         return ['regex' => '~^(?|' . implode('|', $regex) . ')$~', 'map' => $map];
@@ -420,38 +425,39 @@ class Mapper
 trait HttpMethodMapper
 {
 
-    abstract public function set($method, $pattern, $action);
+    abstract public function set($method, $pattern, $action, $strategy = null);
 
     /**
      * Register a set of routes for they especific http methods.
      *
      * @param string                $pattern  The URi pattern that should be matched.
      * @param string|array|\closure $action   The action that must be executed in case of match.
+     * @param string                $strategy The route specific dispatch strategy.
      */
 
-    public function get($pattern, $action)
+    public function get($pattern, $action, $strategy = null)
     {
-        $this->set(Mapper::METHOD_GET, $pattern, $action);
+        $this->set(Mapper::METHOD_GET, $pattern, $action, $strategy);
     }
 
-    public function post($pattern, $action)
+    public function post($pattern, $action, $strategy = null)
     {
-        $this->set(Mapper::METHOD_POST, $pattern, $action);
+        $this->set(Mapper::METHOD_POST, $pattern, $action, $strategy);
     }
 
-    public function put($pattern, $action)
+    public function put($pattern, $action, $strategy = null)
     {
-        $this->set(Mapper::METHOD_PUT, $pattern, $action);
+        $this->set(Mapper::METHOD_PUT, $pattern, $action, $strategy);
     }
 
-    public function patch($pattern, $action)
+    public function patch($pattern, $action, $strategy = null)
     {
-        $this->set(Mapper::METHOD_PATCH, $pattern, $action);
+        $this->set(Mapper::METHOD_PATCH, $pattern, $action, $strategy);
     }
 
-    public function delete($pattern, $action)
+    public function delete($pattern, $action, $strategy = null)
     {
-        $this->set(Mapper::METHOD_DELETE, $pattern, $action);
+        $this->set(Mapper::METHOD_DELETE, $pattern, $action, $strategy);
     }
 
     /**
@@ -459,11 +465,12 @@ trait HttpMethodMapper
      *
      * @param string                $pattern  The URi pattern that should be matched.
      * @param string|array|\closure $action   The action that must be executed in case of match.
+     * @param string                $strategy The route specific dispatch strategy.
      */
-    public function any($pattern, $action)
+    public function any($pattern, $action, $strategy = null)
     {
         foreach (Mapper::getMethods() as $method) {
-            $this->set($method, $pattern, $action);
+            $this->set($method, $pattern, $action, $strategy);
         }
     }
 
@@ -473,11 +480,12 @@ trait HttpMethodMapper
      * @param string                $methods  The method that must be excluded.
      * @param string                $pattern  The URi pattern that should be matched.
      * @param string|array|\closure $action   The action that must be executed in case of match.
+     * @param string                $strategy The route specific dispatch strategy.
      */
-    public function except($methods, $pattern, $action)
+    public function except($methods, $pattern, $action, $strategy = null)
     {
         foreach (array_diff_key(Mapper::getMethods(), array_flip((array) $methods)) as $method) {
-            $this->set($method, $pattern, $action);
+            $this->set($method, $pattern, $action, $strategy);
         }
     }
 
@@ -487,11 +495,12 @@ trait HttpMethodMapper
      * @param string|array          $methods  The method that must be matched.
      * @param string                $pattern  The URi pattern that should be matched.
      * @param string|array|\closure $action   The action that must be executed in case of match.
+     * @param string                $strategy The route specific dispatch strategy.
      */
-    public function match($methods, $pattern, $action)
+    public function match($methods, $pattern, $action, $strategy = null)
     {
         foreach (array_intersect_key(Mapper::getMethods(), array_flip((array) $methods)) as $method) {
-            $this->set($method, $pattern, $action);
+            $this->set($method, $pattern, $action, $strategy);
         }
     }
 
@@ -510,7 +519,7 @@ trait ControllerMapper
 
     abstract public function getActionDelimiter();
     abstract public function getPatternWildcards();
-    abstract public function match($methods, $pattern, $action);
+    abstract public function match($methods, $pattern, $action, $strategy = null);
 
     /**
      * Maps all the controller methods that begins with a HTTP method, and maps the rest of
@@ -538,10 +547,11 @@ trait ControllerMapper
         foreach ($methods as $route) {
             $uri = preg_replace_callback('~(^|[a-z])([A-Z])~', [$this, 'getControllerAction'], $route[1]);
 
-            $method = $route[0] . $route[1];
-            $dynamic = $this->getMethodConstraints($controller, $method);
+            $methodName = $route[0] . $route[1];
+            $methodObj = new \ReflectionMethod($controller, $methodName);
+            $dynamic = $this->getMethodConstraints($methodObj);
 
-            $this->{$route[0]}($prefix . $uri . $dynamic, $controller . $delimiter . $method);
+            $this->{$route[0]}($prefix . '/' . $uri . $dynamic, $controller . $delimiter . $methodName, $this->getMethodStrategy($methodObj));
         }
 
         return $this;
@@ -634,9 +644,8 @@ trait ControllerMapper
      * @return string The resulting URi.
      */
 
-    protected function getMethodConstraints($controller, $method)
+    protected function getMethodConstraints(\ReflectionMethod $method)
     {
-        $method = new \ReflectionMethod($controller, $method);
         $beginUri = '';
         $endUri = '';
 
@@ -713,6 +722,19 @@ trait ControllerMapper
         return $this->getPatternWildcards()[$type[1]];
     }
 
+    /**
+     * Get the strategy defined for a controller method by comment.
+     *
+     * @param \ReflectionMethod $method
+     * @return null|string
+     */
+
+    protected function getMethodStrategy(\ReflectionMethod $method)
+    {
+        preg_match('~\@strategy\s([a-zA-Z\\\_]+)~', $method->getDocComment(), $strategy);
+        return isset($strategy[1]) ? $strategy[1] : null;
+    }
+
 }
 
 /**
@@ -725,7 +747,7 @@ trait ControllerMapper
 trait ResourceMapper
 {
 
-    abstract public function set($methods, $pattern, $action);
+    abstract public function set($methods, $pattern, $action, $strategy = null);
     abstract public function getActionDelimiter();
     abstract public function getControllerName($controller, array $options = array());
 
