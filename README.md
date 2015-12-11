@@ -61,7 +61,7 @@ First of all you need to understand some concepts of this project.
 
 * __Mapper__: This class will hold all the routes and compile then if necessary.
 * __Dispatcher__: This will dispatch the Collection routes based on a given request http method and uri.
-* __Strategies__: Is the form that the algoritm will dispatch a given route.
+* __Strategies__: Is the form that the algorithm will dispatch a given route.
 
 ##Basic Usage
 After you have the classes ready to be instantiate, you only need to register the routes and call the dispatch method.
@@ -281,7 +281,7 @@ By default all the 7 routes will be created for a resource controller, but you c
 $mapper->resource(PhotosController::class, ['only' => ['index', 'show']]);
 ```
 
-Now, a GET request to `/photos` would suceed, but a POST request to `/photos` (Wich would ordinarily be routed to the create action) will fail.
+Now, a GET request to `/photos` would succeed, but a POST request to `/photos` (Which would ordinarily be routed to the create action) will fail.
 
 The `except` option specifies a route or list of routes that should __not__ create:
 
@@ -294,7 +294,7 @@ In this case, all the normal routes except the route for destroy (a DELETE reque
 > **TIP:** If your application has many RESTFul routes, using `only` and `except` to generate only the routes that actually need can cut down on memory use and speed up the routing process.
 
 ##Namespacing Routes
-For working with [namespaces](http://php.net/manual/en/language.namespaces.php) the mapper uses the buildin PHP namespace syntax:
+For working with [namespaces](http://php.net/manual/en/language.namespaces.php) the mapper uses the build-in PHP namespace syntax:
 
 ```php
 namespace App\Controllers
@@ -382,4 +382,4 @@ Where map time is the time cost for registering all the routes, match time is th
 - Respond all requests with a single route.
 - Default parameters to routes.
 - Grouped routes with prefix.
-- Neasted resources.
+- Nested resources.
