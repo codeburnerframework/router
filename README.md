@@ -39,6 +39,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
     - [Class Methods](#class-methods)
         - [String Mode](#string-mode)
         - [Array Mode](#array-mode)
+        - [Dynamic Call](#dynamic-call)
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
     - [Named Functions](#name-functions)
 - [Request Methods](#request-methods)
@@ -159,6 +160,7 @@ Or you could pass an array with two elements, the first is the object and the se
 $mapper->get('/heisenberg/{name}', [HeisenbergController::class, 'sayMyName']);
 ```
 
+####Dynamic Call
 Sometimes you need to call a specific method for a especific route, you don't need to register lots of routes for that, only register a global route like this:
 
 ```php
