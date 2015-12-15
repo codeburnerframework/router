@@ -37,9 +37,6 @@ Don't forget to install or update the composer and include the `vendor/autoload.
     - [Optional Segments](#optional-segments)
 - [Action Types](#action-types)
     - [Class Methods](#class-methods)
-        - [String Mode](#string-mode)
-        - [Array Mode](#array-mode)
-        - [Dynamic Call](#dynamic-call)
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
     - [Named Functions](#name-functions)
 - [Request Methods](#request-methods)
@@ -129,9 +126,7 @@ This will print `Hello alex your id is 7` for a `/users/7/alex` uri and `Hello u
 Actions are what will be executed if some route match the request, there are three ways to define this actions, see below.
 
 ###Class Methods
-In one MVC application you may wish to route to a controller. To call a controller method you have some options see below:
-
-####String Mode
+In one MVC application you may wish to route to a controller.
 You could call on string mode, that will explode the string in the `#` delimiter by default and create a new instance of the class.
 
 ```php
@@ -152,16 +147,7 @@ $mapper->setActionDelimiter('@');
 $mapper->get('/heisenberg/{name}', 'HeisenbergController@sayMyName');
 ```
 
-####Array Mode
-Or you could pass an array with two elements, the first is the object and the second is the name of method.
-
-```php
-// ...
-$mapper->get('/heisenberg/{name}', [HeisenbergController::class, 'sayMyName']);
-```
-
-####Dynamic Call
-Sometimes you need to call a specific method for a especific route, you don't need to register lots of routes for that, only register a global route like this:
+Sometimes you need to call a specific method for a especific route, you don't need to register lots of routes for that, only register a global route like the example bellow, that should match `/Heisenberg/cook/1000000` for example, and execute the `HeisenbergController#cook` action with parameter 1000000.
 
 ```php
 class HeisenbergController {
@@ -173,7 +159,13 @@ class HeisenbergController {
 $mapper->get('/{person}/{action}/{number}', '{person}Controller#{action}');
 ```
 
-This should match `/Heisenberg/cook/1000000` for example, and execute the `HeisenbergController#cook` action with parameter 1000000.
+Or you could pass an array with two elements, the first is the object and the second is the name of method.
+
+```php
+$myHeisenbergController = new HeisenbergController;
+// ...
+$mapper->get('/heisenberg/{name}', [$myHeisenbergController, 'sayMyName']);
+```
 
 ###Anonymous Functions/Closures
 
