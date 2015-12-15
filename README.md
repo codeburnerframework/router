@@ -34,6 +34,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
     - [Static Routes](#static-routes)
     - [Dynamic Routes](#dynamic-routes)
         - [Segments Constraints](#segments-constraints)
+        - [Wildcard Constraints](#wildcard-constraints)
     - [Optional Segments](#optional-segments)
 - [Action Types](#action-types)
     - [Class Methods](#class-methods)
@@ -111,6 +112,22 @@ $mapper->get('/photos/{id:[A-Z]\d+}', 'PhotosController#show');
 This route would match paths such as `/photos/A123456`, but not `/photos/897`.
 
 Constraints takes regular expressions with the restriction that regex must not use capturing groups. For example `{lang:(en|de)}` is not a valid placeholder, because `()` is a capturing group. Instead you can use either `{lang:en|de}` or `{lang:(?:en|de)}`.
+
+####Wildcard Constraints
+If you don't like the regex experience you coul'd use the wildcards to map a especific pre made constraint. By default the mapper come with 6 pre made constraints or wildcards, they are: `int`, `integer`, `string`, `float`, `bool`, `boolean`. As they are self explaned, only the bool's variation need to be clarified, it match for 0, 1, false, true, no and yes.
+
+```php
+$mapper->get('/photos/{id:int}', 'PhotosController#show');
+```
+
+This route would match paths with only integers as argument, like `/photos/12345` but not `/photos/123.3` as it is a float.
+You can define your own wildcard constraints by the `setPatternWildcard` method of the mapper like this:
+
+```php
+$mapper->setPatternWildcard('uid', 'uid-[a-z0-9]+');
+// ...
+$mapper->get('/user/{id:uid}', 'UserController#profile');
+```
 
 ###Optional Segments
 For optinal segments in your routes use the `[` and `]` statement to embrace the optional part. Optional segments must only be in the end of pattern and close all opened `[` with `]`. For example:
