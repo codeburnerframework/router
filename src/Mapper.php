@@ -313,8 +313,6 @@ class Mapper
             $map[$groupCount] = [$route['action'], $route['params'], $route['strategy']];
         }
 
-        var_dump($map);
-
         return ['regex' => '~^(?|' . implode('|', $regex) . ')$~', 'map' => $map];
     }
 
@@ -363,18 +361,12 @@ class Mapper
     {
         $index = $this->getDynamicIndex($method, $pattern);
 
-        if (isset($this->dynamics[0])) {
-               $dynamics = $this->dynamics[0];
-        } else $dynamics = [];
-
         if (!isset($this->dynamics[$index])) {
-            return $dynamics;
+            return [];
         }
 
-        $dynamics = array_merge($dynamics, $this->dynamics[$index]);
-        $chunks   = array_chunk($dynamics, round(1 + 3.3 * log(count($dynamics))), true);
-
-        return array_map([$this, 'buildGroup'], $chunks);
+        $dynamics = $this->dynamics[$index];
+        return array_map([$this, 'buildGroup'], array_chunk($dynamics, round(1 + 3.3 * log(count($dynamics))), true));
     }
 
     /**
