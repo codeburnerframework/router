@@ -68,11 +68,11 @@ class Mapper
      * of infinite routes ate 9 slashes or if you prefer, segments.
      */
 
-    const METHOD_GET    = 10;
-    const METHOD_POST   = 20;
-    const METHOD_PUT    = 30;
-    const METHOD_PATCH  = 40;
-    const METHOD_DELETE = 50;
+    const METHOD_GET    = 100;
+    const METHOD_POST   = 200;
+    const METHOD_PUT    = 300;
+    const METHOD_PATCH  = 400;
+    const METHOD_DELETE = 500;
 
     /**
      * An mirror for the constants values in array form for easily iteration and validation.
@@ -101,8 +101,8 @@ class Mapper
         'integer' => '\d+',
         'string' => '\w+',
         'float' => '[-+]?(\d*[.])?\d+',
-        'bool' => '^(1|0|true|false|yes|no)$',
-        'boolean' => '^(1|0|true|false|yes|no)$'
+        'bool' => '1|0|true|false|yes|no',
+        'boolean' => '1|0|true|false|yes|no'
     ];
     
     /**
@@ -234,11 +234,17 @@ class Mapper
     protected function parsePatternPlaceholders($pattern)
     {
         $parameters = [];
-        preg_match_all('~' . self::DYNAMIC_REGEX . '~x', $pattern, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+        preg_match_all('~' . self::DYNAMIC_REGEX . '~x', $pattern, $matches, PREG_SET_ORDER);
 
-        foreach ((array) $matches as $match) {
-            $pattern = str_replace($match[0][0], isset($match[2]) ? '(' . trim($match[2][0]) . ')' : self::DEFAULT_PLACEHOLDER_REGEX, $pattern);
-            $parameters[$match[1][0]] = $match[1][0];
+        foreach ((array) $matches as $key => $match) {
+            if (isset($match[2])) {
+                if (isset($this->patternWildcards[$match[2]])) {
+                       $regex = '(' . $this->patternWildcards[$match[2]] . ')';
+                } else $regex = '(' . trim($match[2]) . ')';
+            } else     $regex = self::DEFAULT_PLACEHOLDER_REGEX;
+
+            $pattern = str_replace($match[0], $regex, $pattern);
+            $parameters[$key] = $match[1];
         }
 
         return [$pattern, $parameters];
@@ -306,6 +312,8 @@ class Mapper
             $regex[]          = $route['regex'] . str_repeat('()', $groupCount - $paramsCount - 1);
             $map[$groupCount] = [$route['action'], $route['params'], $route['strategy']];
         }
+
+        var_dump($map);
 
         return ['regex' => '~^(?|' . implode('|', $regex) . ')$~', 'map' => $map];
     }
@@ -638,9 +646,7 @@ trait ControllerMapper
     /**
      * Inspect a method seeking for parameters and make a dynamic pattern.
      *
-     * @param string|object $controller The controller representation.
-     * @param string        $method     The method to be inspected name.
-     *
+     * @param \ReflectionMethod $method The method to be inspected name.
      * @return string The resulting URi.
      */
 
@@ -700,26 +706,11 @@ trait ControllerMapper
             $method->getDocComment(), $types, PREG_SET_ORDER);
 
         foreach ((array) $types as $type) {
-            $params[$type[2]] = $this->getParamConstraint($type);
+            // if a pattern is defined on Match take it otherwise take the param type by PHPDoc.
+            $params[$type[2]] = isset($type[4]) ? $type[4] : $type[1];
         }
 
         return $params;
-    }
-
-    /**
-     * Convert PHPDoc type to a constraint.
-     *
-     * @param string $type The PHPDoc type.
-     * @return string The Constraint string.
-     */
-
-    protected function getParamConstraint($type)
-    {
-        if (isset($type[4])) {
-            return $type[4];
-        }
-
-        return $this->getPatternWildcards()[$type[1]];
     }
 
     /**
