@@ -34,11 +34,10 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 - [Dynamic Routes](#dynamic-routes)
     - [Segments Constraints](#segments-constraints)
     - [Wildcard Constraints](#wildcard-constraints)
-        - [Quantification of Wildcard Constraint](#quantification-of-wildcard-constraint]
+        - [Quantification of Wildcard Constraint](#quantification-of-wildcard-constraint)
 - [Optional Segments](#optional-segments)
 - [Action Types](#action-types)
     - [Class Methods](#class-methods)
-        - [Delimiter](#delimiter)
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
     - [Named Functions](#name-functions)
     - [Dynamic Methods and Functions](#dynamic-methods-and-functions)
@@ -136,7 +135,7 @@ Wildcards can have a quantification attribute for defining a length. The quantif
 $mapper->get('/user/search/{name:string{3,}', 'UserController#search');
 ```
 
-When defining wildcards, for determining the support to quantification use the `{length}´ placeholder, it will be replaced by the quantification or by a `+` if the quantification was not found.
+When defining wildcards, for determining the support to quantification use the `{length}` placeholder, it will be replaced by the quantification or by a `+` if the quantification was not found.
 
 ```php
 $mapper->setPatternWildcard('uid', 'uid-[a-z0-9]{length}');
@@ -145,7 +144,7 @@ $mapper->get('/user/{id:uid}', 'UserController#profile'); // will generate /user
 $mapper->get('/photo/{id:uid{10}}', 'PhotoController#show'); // will generate /photo/(uid-[a-z0-9]{10}
 ```
 
-> **NOTE:** By default the ´string`, `int`, `integer` and `float` wildcards supports quantification.
+> **NOTE:** By default the `string`, `int`, `integer` and `float` wildcards supports quantification.
 
 ###Optional Segments
 For optinal segments in your routes use the `[` and `]` statement to embrace the optional part. Optional segments must only be in the end of pattern and close all opened `[` with `]`. For example:
@@ -174,21 +173,32 @@ class HeisenbergController {
 $mapper->get('/heisenberg/{name}', 'HeisenbergController#sayMyName');
 ```
 
+You could change the delimiter by setting it like this:
+
+```php
+$mapper->setActionDelimiter('@');
+// so the new delimiter will be @
+$mapper->get('/heisenberg/{name}', 'HeisenbergController@sayMyName');
+```
+
+Sometimes you need to call a specific method for a especific route, you don't need to register lots of routes for that, only register a global route like the example bellow, that should match `/Heisenberg/cook/1000000` for example, and execute the `HeisenbergController#cook` action with parameter 1000000.
+
+```php
+class HeisenbergController {
+    public function cook($number) {
+        echo "cooking $number cristals...";
+    }
+}
+
+$mapper->get('/{person}/{action}/{number}', '{person}Controller#{action}');
+```
+
 Or you could pass an array with two elements, the first is the object and the second is the name of method.
 
 ```php
 $myHeisenbergController = new HeisenbergController;
 // ...
 $mapper->get('/heisenberg/{name}', [$myHeisenbergController, 'sayMyName']);
-```
-
-####Delimiter
-You could change the delimiter that separate the controller from method on string by setting it like this:
-
-```php
-$dispatcher->setActionDelimiter('@');
-// so the new delimiter will be @ not more #
-$mapper->get('/heisenberg/{name}', 'HeisenbergController@sayMyName');
 ```
 
 ###Anonymous Functions/Closures
