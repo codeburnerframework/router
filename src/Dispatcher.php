@@ -52,6 +52,14 @@ class Dispatcher
     protected $basepath;
 
     /**
+     * The delimiter in the controller/method action espefication.
+     *
+     * @var string
+     */
+
+    protected $actionDelimiter = '#';
+
+    /**
      * Construct the route dispatcher.
      *
      * @param Collection $collection The collection to save routes.
@@ -168,16 +176,17 @@ class Dispatcher
                 continue;
             }
 
-            list($routeAction, $routeParams, $strategy) = $route['map'][count($matches)];
+            list($action, $params, $strategy) = $route['map'][count($matches)];
+            // removing the uri from array.
+            unset($matches[0]);
+            // sometimes null values come with the matches so the array_filter must be called first.
+            $params = array_combine($params, array_filter($matches));
 
-            $params = [];
-            $i = 0;
-
-            foreach ($routeParams as $name) {
-                $params[$name] = $matches[++$i];
-            }
-
-            return ['action' => $this->resolveDynamicRouteAction($routeAction, $params), 'params' => $params, 'strategy' => $strategy];
+            return [
+                'action'   => $this->resolveDynamicRouteAction($action, $params),
+                'params'   => $params,
+                'strategy' => $strategy
+            ];
         }
 
         return false;
@@ -248,15 +257,12 @@ class Dispatcher
 
     protected function resolveDynamicRouteAction($action, $params)
     {
-        if (is_array($action)) {
-            foreach ($action as $key => $value) {
-                if (is_string($value)) {
-                    $action[$key] = str_replace(['{', '}'], '', str_replace(array_keys($params), array_values($params), $value));
-                }
-            }
+        if ($action instanceof \Closure) {
+            return $action;
         }
 
-        return $action;
+        $action = str_replace(['{', '}'], '', str_replace(array_keys($params), $params, $action));
+        return is_string($action) && strpos($action, $this->actionDelimiter) ? explode($this->actionDelimiter, $action) : $action;
     }
 
     /**
@@ -275,6 +281,15 @@ class Dispatcher
     public function getStrategy()
     {
         return $this->strategy;
+    }
+
+    /**
+     * @param StrategyInterface $strategy
+     */
+
+    public function setStrategy(StrategyInterface $strategy)
+    {
+        $this->strategy = $strategy;
     }
 
     /**
@@ -299,6 +314,24 @@ class Dispatcher
     }
 
     /**
+     * @return string
+     */
+
+    public function getActionDelimiter()
+    {
+        return $this->actionDelimiter;
+    }
+
+    /**
+     * @param string $delimiter
+     */
+
+    public function setActionDelimiter($delimiter)
+    {
+        $this->actionDelimiter = (string) $delimiter;
+    }
+
+    /**
      * @param string $strategy
      * @throws BadRouteException
      * @return \Codeburner\Router\Strategies\DispatcherStrategyInterface
@@ -307,7 +340,7 @@ class Dispatcher
     private function getRouteStrategy($strategy)
     {
         if ($strategy === null) {
-            return new $this->strategy;
+            return is_string($this->strategy) ? $this->strategy = new $this->strategy : $this->strategy;
         }
 
         if (class_exists($strategy)) {

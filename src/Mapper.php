@@ -104,14 +104,6 @@ class Mapper
         'bool' => '1|0|true|false|yes|no',
         'boolean' => '1|0|true|false|yes|no'
     ];
-    
-    /**
-     * The delimiter in the controller/method action espefication.
-     *
-     * @var string
-     */
-
-    protected $actionDelimiter = '#';
 
     /**
      * Hold all the routes without parameters.
@@ -140,12 +132,10 @@ class Mapper
 
     public function set($method, $pattern, $action, $strategy = null)
     {
-        $patterns = $this->parsePatternOptionals($pattern);
-        $action = $this->parseAction($action);
-
-        foreach ($patterns as $pattern) {
+        foreach ($this->parsePatternOptionals($pattern) as $pattern) {
             strpos($pattern, '{') === false ?
-                $this->setStatic($method, $pattern, $action, $strategy) : $this->setDynamic($method, $pattern, $action, $strategy);
+                $this->setStatic ($method, $pattern, $action, $strategy):
+                $this->setDynamic($method, $pattern, $action, $strategy);
         }
     }
 
@@ -191,22 +181,6 @@ class Mapper
     }
 
     /**
-     * Parses the given action to something that can be called.
-     *
-     * @param  string|array|\closure $action  The callback for when route is matched.
-     * @return string|array|\closure
-     */
-
-    protected function parseAction($action)
-    {
-        if (is_string($action)) {
-            return explode($this->actionDelimiter, $action);
-        }
-
-        return $action;
-    }
-
-    /**
      * Separate routes pattern with optional parts into n new patterns.
      *
      * @param string $pattern The route pattern to parse.
@@ -233,16 +207,16 @@ class Mapper
 
     protected function parsePatternPlaceholders($pattern)
     {
-        $parameters = [];
+        $params = [];
         preg_match_all('~' . self::DYNAMIC_REGEX . '~x', $pattern, $matches, PREG_SET_ORDER);
 
         foreach ((array) $matches as $key => $match) {
             $pattern = str_replace($match[0],
                 isset($match[2]) ? $this->getPlaceholderRegex($match[2]) : self::DEFAULT_PLACEHOLDER_REGEX, $pattern);
-            $parameters[$key] = $match[1];
+            $params[$key] = $match[1];
         }
 
-        return [$pattern, $parameters];
+        return [$pattern, $params];
     }
 
     /**
@@ -407,24 +381,6 @@ class Mapper
         $this->patternWildcards[(string) $pattern] = (string) $wildcard;
     }
 
-    /**
-     * @return string
-     */
-
-    public function getActionDelimiter()
-    {
-        return $this->actionDelimiter;
-    }
-
-    /**
-     * @param string $delimiter
-     */
-
-    public function setActionDelimiter($delimiter)
-    {
-        $this->actionDelimiter = (string) $delimiter;
-    }
-
 }
 
 /**
@@ -530,7 +486,6 @@ trait HttpMethodMapper
 trait ControllerMapper
 {
 
-    abstract public function getActionDelimiter();
     abstract public function getPatternWildcards();
     abstract public function match($methods, $pattern, $action, $strategy = null);
 
@@ -555,7 +510,6 @@ trait ControllerMapper
 
         $methods = $this->getControllerMethods($methods);
         $prefix = $this->getControllerPrefix($prefix, $controller);
-        $delimiter = $this->getActionDelimiter();
 
         foreach ($methods as $route) {
             $uri = preg_replace_callback('~(^|[a-z])([A-Z])~', [$this, 'getControllerAction'], $route[1]);
@@ -564,7 +518,7 @@ trait ControllerMapper
             $methodObj = new \ReflectionMethod($controller, $methodName);
             $dynamic = $this->getMethodConstraints($methodObj);
 
-            $this->{$route[0]}($prefix . $uri . $dynamic, $controller . $delimiter . $methodName, $this->getMethodStrategy($methodObj));
+            $this->{$route[0]}($prefix . $uri . $dynamic, [$controller, $methodName], $this->getMethodStrategy($methodObj));
         }
 
         return $this;
@@ -744,7 +698,6 @@ trait ResourceMapper
 {
 
     abstract public function set($methods, $pattern, $action, $strategy = null);
-    abstract public function getActionDelimiter();
     abstract public function getControllerName($controller, array $options = array());
 
     /**
@@ -776,14 +729,12 @@ trait ResourceMapper
 
     public function resource($controller, array $options = array())
     {
-        $name  = isset($options['prefix']) ? $options['prefix'] : '';
-        $name .= $this->getControllerName($controller, $options);
+        $name    = isset($options['prefix']) ? $options['prefix'] : '';
+        $name   .= $this->getControllerName($controller, $options);
         $actions = $this->getResourceActions($options);
-        $delimiter = $this->getActionDelimiter();
 
         foreach ($actions as $action => $map) {
-            $this->set($map[0], str_replace(':name', $name, $map[1]),
-                is_string($controller) ? $controller . $delimiter . $action : [$controller, $action]);
+            $this->set($map[0], str_replace(':name', $name, $map[1]), [$controller, $action]);
         }
     }
 
