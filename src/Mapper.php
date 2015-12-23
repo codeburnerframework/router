@@ -97,10 +97,10 @@ class Mapper
      */
 
     protected $patternWildcards = [
-        'int' => '\d+',
-        'integer' => '\d+',
-        'string' => '\w+',
-        'float' => '[-+]?(\d*[.])?\d+',
+        'int' => '\d{length}',
+        'integer' => '\d{length}',
+        'string' => '\w{length}',
+        'float' => '[-+]?(\d*[.])?\d{length}',
         'bool' => '1|0|true|false|yes|no',
         'boolean' => '1|0|true|false|yes|no'
     ];
@@ -237,17 +237,30 @@ class Mapper
         preg_match_all('~' . self::DYNAMIC_REGEX . '~x', $pattern, $matches, PREG_SET_ORDER);
 
         foreach ((array) $matches as $key => $match) {
-            if (isset($match[2])) {
-                if (isset($this->patternWildcards[$match[2]])) {
-                       $regex = '(' . $this->patternWildcards[$match[2]] . ')';
-                } else $regex = '(' . trim($match[2]) . ')';
-            } else     $regex = self::DEFAULT_PLACEHOLDER_REGEX;
-
-            $pattern = str_replace($match[0], $regex, $pattern);
+            $pattern = str_replace($match[0],
+                isset($match[2]) ? $this->getPlaceholderRegex($match[2]) : self::DEFAULT_PLACEHOLDER_REGEX, $pattern);
             $parameters[$key] = $match[1];
         }
 
         return [$pattern, $parameters];
+    }
+
+    /**
+     * Find and replace wildcards in one pattern placeholder.
+     *
+     * @param string $placeholder
+     * @return string
+     */
+
+    protected function getPlaceholderRegex($placeholder)
+    {
+        $strippedPlaceholder = strstr($placeholder, '{', true) ?: $placeholder;
+
+        if (isset($this->patternWildcards[$strippedPlaceholder])) {
+            return '(' . str_replace('{length}', strstr($placeholder, '{') ?: '+', $this->patternWildcards[$strippedPlaceholder]) . ')';
+        }
+
+        return '(' . trim($placeholder) . ')';
     }
 
     /**

@@ -30,12 +30,12 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 ##Table of Content
 
 - [Basic Usage](#basic-usage)
-- [Routes](#routes)
-    - [Static Routes](#static-routes)
-    - [Dynamic Routes](#dynamic-routes)
-        - [Segments Constraints](#segments-constraints)
-        - [Wildcard Constraints](#wildcard-constraints)
-    - [Optional Segments](#optional-segments)
+- [Static Routes](#static-routes)
+- [Dynamic Routes](#dynamic-routes)
+    - [Segments Constraints](#segments-constraints)
+    - [Wildcard Constraints](#wildcard-constraints)
+        - [Quantification of Wildcard Constraint](#quantification-of-wildcard-constraint]
+- [Optional Segments](#optional-segments)
 - [Action Types](#action-types)
     - [Class Methods](#class-methods)
     - [Anonymous Functions/Closures](#anonymous-functionsclosures)
@@ -81,10 +81,7 @@ $mapper->get('/', function () {
 $dispatcher->dispatch($_REQUEST['REQUEST_METHOD'], $_REQUEST['REQUEST_URI']);
 ```
 
-##Routes
-The Codeburner Router System have two types of routes, see below.
-
-###Static Routes
+##Static Routes
 The simplest way to define a route, all the `uri` is `static` and the action have no parameters. This implementation will `echo` `I'm on dashboard` if user request the `yourdomain.com/dashboard` url with `get` http method.
 
 ```php
@@ -93,7 +90,7 @@ $mapper->get('/dashboard', function () {
 });
 ```
 
-###Dynamic Routes
+##Dynamic Routes
 In the other hand the dynamic routes have some variables on the `uri`, this variables will be used as the action parameters. This definition will match if user request url like `yourdomain.com/account/alex` and will `echo` `Hello alex!`.
 
 ```php
@@ -102,7 +99,7 @@ $mapper->get('/account/{name}', function ($name) {
 });
 ```
 
-####Segments Constraints
+###Segments Constraints
 You can use the constraints to enforce a format for a dynamic segment:
 
 ```php
@@ -113,7 +110,7 @@ This route would match paths such as `/photos/A123456`, but not `/photos/897`.
 
 Constraints takes regular expressions with the restriction that regex must not use capturing groups. For example `{lang:(en|de)}` is not a valid placeholder, because `()` is a capturing group. Instead you can use either `{lang:en|de}` or `{lang:(?:en|de)}`.
 
-####Wildcard Constraints
+###Wildcard Constraints
 If you don't like the regex experience you coul'd use the wildcards to map a especific pre made constraint. By default the mapper come with 6 pre made constraints or wildcards, they are: `int`, `integer`, `string`, `float`, `bool`, `boolean`. As they are self explaned, only the bool's variation need to be clarified, it match for 0, 1, false, true, no and yes.
 
 ```php
@@ -128,6 +125,25 @@ $mapper->setPatternWildcard('uid', 'uid-[a-z0-9]+');
 // ...
 $mapper->get('/user/{id:uid}', 'UserController#profile');
 ```
+
+####Quantification of Wildcard Constraint
+
+Wildcards can have a quantification attribute for defining a length. The quantification attribute is exactly equal to the regex definition, {n} nor a exactly n length, {n,} for at least n length and {n,m} for at least n but no more than m length. For example, matching a string with at least 3 chars.
+
+```php
+$mapper->get('/user/search/{name:string{3,}', 'UserController#search');
+```
+
+When defining wildcards, for determining the support to quantification use the `{length}´ placeholder, it will be replaced by the quantification or by a `+` if the quantification was not found.
+
+```php
+$mapper->setPatternWildcard('uid', 'uid-[a-z0-9]{length}');
+// ...
+$mapper->get('/user/{id:uid}', 'UserController#profile'); // will generate /user/(uid-[a-z0-9]+)
+$mapper->get('/photo/{id:uid{10}}', 'PhotoController#show'); // will generate /photo/(uid-[a-z0-9]{10}
+```
+
+> **NOTE:** By default the ´string`, `int`, `integer` and `float` wildcards supports quantification.
 
 ###Optional Segments
 For optinal segments in your routes use the `[` and `]` statement to embrace the optional part. Optional segments must only be in the end of pattern and close all opened `[` with `]`. For example:
