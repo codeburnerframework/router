@@ -34,7 +34,7 @@ Don't forget to install or update the composer and include the `vendor/autoload.
 - [Dynamic Routes](#dynamic-routes)
     - [Segments Constraints](#segments-constraints)
     - [Wildcard Constraints](#wildcard-constraints)
-        - [Quantification of Wildcard Constraint](#quantification-of-wildcard-constraint]
+        - [Quantification of Wildcard Constraint](#quantification-of-wildcard-constraint)
 - [Optional Segments](#optional-segments)
 - [Action Types](#action-types)
     - [Class Methods](#class-methods)
@@ -134,7 +134,7 @@ Wildcards can have a quantification attribute for defining a length. The quantif
 $mapper->get('/user/search/{name:string{3,}', 'UserController#search');
 ```
 
-When defining wildcards, for determining the support to quantification use the `{length}´ placeholder, it will be replaced by the quantification or by a `+` if the quantification was not found.
+When defining wildcards, for determining the support to quantification use the `{length}` placeholder, it will be replaced by the quantification or by a `+` if the quantification was not found.
 
 ```php
 $mapper->setPatternWildcard('uid', 'uid-[a-z0-9]{length}');
@@ -143,7 +143,7 @@ $mapper->get('/user/{id:uid}', 'UserController#profile'); // will generate /user
 $mapper->get('/photo/{id:uid{10}}', 'PhotoController#show'); // will generate /photo/(uid-[a-z0-9]{10}
 ```
 
-> **NOTE:** By default the ´string`, `int`, `integer` and `float` wildcards supports quantification.
+> **NOTE:** By default the `string`, `int`, `integer` and `float` wildcards supports quantification.
 
 ###Optional Segments
 For optinal segments in your routes use the `[` and `]` statement to embrace the optional part. Optional segments must only be in the end of pattern and close all opened `[` with `]`. For example:
