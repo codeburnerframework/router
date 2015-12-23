@@ -88,8 +88,12 @@ class Dispatcher
     public function dispatch($method, $uri)
     {
         if ($route = $this->match($method, $uri)) {
+            if (is_string($route['action']) && strpos($route['action'], $this->actionDelimiter)) {
+                   $action = explode($this->actionDelimiter, $route['action']);
+            } else $action = $route['action'];
+
             $strategy = $this->getRouteStrategy($route['strategy']);
-            return $strategy->dispatch($route['action'], $route['params']);
+            return $strategy->dispatch($action, $route['params']);
         }
 
         $this->dispatchNotFoundRoute($method, $uri);
@@ -204,7 +208,7 @@ class Dispatcher
 
     protected function dispatchNotFoundRoute($method, $uri)
     {
-        $dm = $dm = [];
+        $sm = $dm = [];
 
         if ($sm = ($this->checkStaticRouteInOtherMethods($method, $uri)) 
                 || $dm = ($this->checkDynamicRouteInOtherMethods($method, $uri))) {
@@ -261,8 +265,7 @@ class Dispatcher
             return $action;
         }
 
-        $action = str_replace(['{', '}'], '', str_replace(array_keys($params), $params, $action));
-        return is_string($action) && strpos($action, $this->actionDelimiter) ? explode($this->actionDelimiter, $action) : $action;
+        return str_replace(['{', '}'], '', str_replace(array_keys($params), $params, $action));
     }
 
     /**
