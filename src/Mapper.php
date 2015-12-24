@@ -152,7 +152,6 @@ class Mapper
     {
         $this->statics[$method][$pattern] = [
             'action'   => $action,
-            'params'   => [],
             'strategy' => $strategy
         ];
     }
@@ -168,14 +167,9 @@ class Mapper
 
     protected function setDynamic($method, $pattern, $action, $strategy)
     {
-        $index = $this->getDynamicIndex($method, $pattern);
-
-        list($regex, $params) = $this->parsePatternPlaceholders($pattern);
-
-        $this->dynamics[$index][] = [
+        $this->dynamics[$this->getDynamicIndex($method, $pattern)][] = [
             'action'   => $action,
-            'regex'    => $regex,
-            'params'   => $params,
+            'pattern'  => $pattern,
             'strategy' => $strategy
         ];
     }
@@ -287,7 +281,7 @@ class Mapper
      * @return array
      */
 
-    protected function buildGroup($routes)
+    protected function buildGroup(array $routes)
     {
         $map = []; 
         $regex = [];
@@ -296,11 +290,26 @@ class Mapper
         foreach ($routes as $route) {
             $paramsCount      = count($route['params']);
             $groupCount       = max($groupCount, $paramsCount) + 1;
-            $regex[]          = $route['regex'] . str_repeat('()', $groupCount - $paramsCount - 1);
+            $regex[]          = $route['pattern'] . str_repeat('()', $groupCount - $paramsCount - 1);
             $map[$groupCount] = [$route['action'], $route['params'], $route['strategy']];
         }
 
-        return ['regex' => '~^(?|' . implode('|', $regex) . ')$~', 'map' => $map];
+        return ['pattern' => '~^(?|' . implode('|', $regex) . ')$~', 'map' => $map];
+    }
+
+    /**
+     * Parse the given route pattern and build a new route representation with a regex
+     * and the parameter names.
+     *
+     * @param array $route
+     * @return array
+     */
+
+    protected function buildRoute(array $route)
+    {
+        list($pattern, $params) = $this->parsePatternPlaceholders($route['pattern']);
+
+        return array_merge($route, ['pattern' => $pattern, 'params' => $params]);
     }
 
     /**
@@ -352,7 +361,7 @@ class Mapper
             return [];
         }
 
-        $dynamics = $this->dynamics[$index];
+        $dynamics = array_map([$this, 'buildRoute'], $this->dynamics[$index]);
         return array_map([$this, 'buildGroup'], array_chunk($dynamics, round(1 + 3.3 * log(count($dynamics))), true));
     }
 

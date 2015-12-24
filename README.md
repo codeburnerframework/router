@@ -435,6 +435,7 @@ fastroute |first   |100     |9     |0.0168  |0.00047   |0.01728487
 codeburner|first   |100     |9     |0.0080  |0.00048   |0.00856208
 
 Where map time is the time cost for registering all the routes, match time is the cost for find the specific route, and usage time is the sum of map and match plus the time to execute the callback of the matched route. The codeburner results have an __average of 55% faster__ usage cost than the fastroute. Note that this is average values of a simple PHP script that can be found [here](https://gist.github.com/alexrohleder96/c6ba88234e51f301a1ab)
+__NOW IS UP TO AN AVERAGE OF 70% FASTER BENCHMARK STATUS WILL BE PUBLISHED SOON.__
 
 ##Todo
 - [ ] [Ruby concern concept](http://guides.rubyonrails.org/routing.html#routing-concerns).

@@ -176,7 +176,7 @@ class Dispatcher
     protected function matchDynamicRoute($routes, $uri)
     {
         foreach ($routes as $route) {
-            if (!preg_match($route['regex'], $uri, $matches)) {
+            if (!preg_match($route['pattern'], $uri, $matches)) {
                 continue;
             }
 
