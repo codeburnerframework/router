@@ -116,7 +116,7 @@ class Mapper
     /**
      * Routes with parameters to compute.
      *
-     * @var array [PROCESSED_INDEX => [ROUTE]]
+     * @var array [PROCESSED_INDEX => [PATTERN => ROUTE]]
      */
 
     protected $dynamics;
@@ -152,7 +152,8 @@ class Mapper
     {
         $this->statics[$method][$pattern] = [
             'action'   => $action,
-            'strategy' => $strategy
+            'strategy' => $strategy,
+            'params'   => []
         ];
     }
 
@@ -167,10 +168,11 @@ class Mapper
 
     protected function setDynamic($method, $pattern, $action, $strategy)
     {
-        $this->dynamics[$this->getDynamicIndex($method, $pattern)][] = [
-            'action'   => $action,
+        $this->dynamics[$this->getDynamicIndex($method, $pattern)][$pattern] = [
             'pattern'  => $pattern,
-            'strategy' => $strategy
+            'action'   => $action,
+            'strategy' => $strategy,
+            'params'   => []
         ];
     }
 
