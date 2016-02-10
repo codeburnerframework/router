@@ -1,417 +1,555 @@
-# Codeburner Router System
+# Codeburner Router
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![Build Status](https://travis-ci.org/codeburnerframework/router.svg?branch=v1.0.0)](https://travis-ci.org/codeburnerframework/router)
-[![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=v1.0.0)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=v1.0.0)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/quality-score.png?b=v1.0.0)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=v1.0.0)
+[![Build Status](https://travis-ci.org/codeburnerframework/router.svg?branch=master)](https://travis-ci.org/codeburnerframework/router)
+[![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
 
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
-An blazing fast PHP router system. Thank's to [Nikita Popov's](https://github.com/nikic/) for [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
+An blazing fast PHP router system with amazing features and abstraction. Thank's to [Nikita Popov's](https://github.com/nikic/) for motivate me with [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
 
-##Instalation
+## Instalation
 
-Add `codeburner/Router` to your `composer.json` file.
+Add `codeburner/router` to your `composer.json` file, and update or install composer dependencies.
 
 ```json
 {
     "require": {
-        "codeburner/router": "1.*"
+        "codeburner/router": "2.*"
     }
 }
 ```
-or via cli
+
+or via CLI:
+
+```bash
+$ composer require codeburner/router --save
 ```
-$ composer require codeburner/router
-```
 
-Don't forget to install or update the composer and include the `vendor/autoload.php` file.
+## Table of Content
 
-##Table of Content
-
-- [Basic Usage](#basic-usage)
-- [Static Routes](#static-routes)
-- [Dynamic Routes](#dynamic-routes)
-    - [Segments Constraints](#segments-constraints)
-    - [Wildcard Constraints](#wildcard-constraints)
-        - [Quantification of Wildcard Constraint](#quantification-of-wildcard-constraint)
-- [Optional Segments](#optional-segments)
-- [Action Types](#action-types)
-    - [Class Methods](#class-methods)
-    - [Anonymous Functions/Closures](#anonymous-functionsclosures)
-    - [Named Functions](#name-functions)
-    - [Dynamic Methods and Functions](#dynamic-methods-and-functions)
-- [Request Methods](#request-methods)
-- [Controller Collector](#controller-collector)
-- [Resource Collector](#resource-collector)
-    - [Restricting the Routes Created](#restricting-the-routes-created)
-- [Namespacing Routes](#namespacing-routes)
-- [Dispatcher](#dispatcher)
+- [Introduction](#introduction)
+    - [Performance](#performance)
+    - [Connecting URLs to Code](#connecting-urls-to-code)
+    - [Usage Example](#usage-example)
+- [Routes](#routes)
+    - [Patterns](#patterns)
+        - [Constraints](#constraints)
+            - [Wildcards](#wildcards)
+        - [Optional Segments](#optional-segments)
+        - [Unicode Characters](#unicode-characters)
+    - [Actions](#actions)
+        - [Strategies](#strategies)
+            - [Enhancers](#enhancers)
+    - [Defaults and Metadata](#defaults-and-metadata)
+- [Collector](#collector)
+    - [Supported Methods](#supported-methods)
+    - [Groups](#groups)
+        - [Namespaces](#namespaces)
+        - [Prefixes](#prefixes)
+        - [Strategies](#strategies)
+        - [Constraints](#constraints)
+    - [Controllers](#controllers)
+        - [Changing Action Join](#changing-action-join)
+        - [Prefixing Controllers or Ignoring Auto-Prefix](#prefixing-controllers-or-ignoring-auto-prefix)
+        - [Defining Multiple Controllers at Same Time](#defining-multiple-controllers-at-same-time)
+        - [Annotated Information](#annotated-information)
+    - [Resources](#resources)
+        - [Prefixing Resources or Ignoring Auto-Prefix](#prefixing-resources-or-ignoring-auto-prefix)
+        - [Defining Multiple Resources at Same Time](#defining-multiple-resources-at-same-time)
+        - [Restricting Created Routes](#restricting-created-routes)
+        - [Nested Resources](#nested-resources)
+            - [Limits to Nesting](#limits-to-nesting)
+            - [Shallowed Resources](#shallowed-resources)
+            - [Adding More RESTful Actions](#adding-more-restful-actions)
+        - [Translated Patterns](#translated-patterns)
+- [Matcher](#matcher)
     - [Basepath](#basepath)
-    - [Dispatch Strategies](#dispatch-strategies)
-        - [URI Strategy](#uri-strategy)
-- [Exceptions](#exceptions)
-    - [Not Found](#not-found)
-    - [Method not Allowed](#method-not-allowed)
-- [Benchmark](#benchmark)
-- [Todo](#todo)
+    - [Exceptions](#exceptions)
+        - [Not Found](#not-found)
+        - [Method not Allowed](#method-not-allowed)
 
-##Base Knowledge
-First of all you need to understand some concepts of this project.
+## Introduction
 
-* __Mapper__: This class will hold all the routes and compile then if necessary.
-* __Dispatcher__: This will dispatch the Collection routes based on a given request http method and uri.
-* __Strategies__: Is the form that the algorithm will dispatch a given route.
+Welcome to the fastest PHP router system docs! Before starting the usage is recommended that you have understanded the main goal and mission of all parts of this package.
 
-##Basic Usage
-After you have the classes ready to be instantiate, you only need to register the routes and call the dispatch method.
+### Performance
+
+Codeburner project create packages with performance in focus, the Codeburner Router was compared with [Nikic's fast route](https://github.com/nikic/fastroute) a fast and base package for several route systems, including the [Laravel](laravel.com) and [SlimFramework](slimframework.com).
+
+The Tests reveals that Codeburner Router can be in average **70% faster** while give a full abstraction level of handling routes. Here are some [blackfire](blackfire.io) comparison of two scripts that maps 100 routes with several arguments and execute them. The comparison can be found [here](), the script for codeburner router [here]() and the script for fastroute [here]().
+
+### Connecting URLs to Code
+
+The router recognizes URLs and dispatches them to a action. For example, when the application receive an incoming request for:
 
 ```php
-use Codeburner\Router\Mapper;
-use Codeburner\Router\Dispatcher;
+"GET" "/article/17"
+```
 
-$mapper = new Mapper;
-$dispatcher = new Dispatcher($mapper);
+It asks the router to match it to a action, if the first matching route is:
 
-// match for a GET request with "/" uri
-$mapper->get('/', function () {
-    echo 'Hello World!';
+```php
+$collector->get("/article/{id}", "ArticleController@show");
+```
+
+The request is dispatched to the `ArticleController`'s `show` method with `17` as parameter.
+
+
+## Usage Example
+
+After a sucessful installation via composer, or a manual including of `Collector.php` and `Matcher.php` you can begin using the package.
+
+```php
+use Codeburner\Router\Collector;
+use Codeburner\Router\Matcher;
+
+$collector = new Collector();
+$matcher   = new Matcher($collector);
+
+$collector->get("/", function () {
+    echo "Hello World!";
 });
 
-// echoes Hello World! if the REQUEST_METHOD is GET and the REQUEST_URI is /
-$dispatcher->dispatch($_REQUEST['REQUEST_METHOD'], $_REQUEST['REQUEST_URI']);
+$route = $matcher->match("get", "/");
+$route->call();
 ```
 
-##Static Routes
-The simplest way to define a route, all the `uri` is `static` and the action have no parameters. This implementation will `echo` `I'm on dashboard` if user request the `yourdomain.com/dashboard` url with `get` http method.
+## Routes
+
+After the release of v2.0.0 all routes are objects, and can be handled in groups. All route attributes can be modified at run time, and you can store a route created in the `Codeburner\Router\Collector` in a var. Every time you create a route by any `Codeburner\Router\Collector` method, a new `Route` object is created and by default a `Group` is returned containing these route.
+
+### Patterns
+
+Patterns follows the popular definitions created by [FastRoute](https://github.com/nikic/FastRoute), if you are familiar with [Laravel](laravel.com) or [Slim Framework](slimframework.com) you will not have problems here.
+
+If you not, all you need to know for now, is that dynamic segments in patterns, or vars or even parameters if you prefer, are defined inside `{` and `}`. All parts of pattern inside this will be captured by the matcher and passed to the action.
+
+#### Constraints
+
+Routes can define dynamic patterns, that dynamic segment can have a constraint of match, in other words you could define that these segment must be an `int` or a `uid`. The constraint definition follows the pattern adopted by most of routers, for example, to enforce the format of slugs the constraint must be something that have letters, numbers and hyphens, not more.
 
 ```php
-$mapper->get('/dashboard', function () {
-    echo 'I\'m on dashboard!';
-});
+"/articles/{article:[a-z0-9-]+}"
 ```
 
-##Dynamic Routes
-In the other hand the dynamic routes have some variables on the `uri`, this variables will be used as the action parameters. This definition will match if user request url like `yourdomain.com/account/alex` and will `echo` `Hello alex!`.
+> **NOTE:** As a constraint is essentially a portion of a bigger REGEX there is a restriction of use of capturing groups. For example `{lang:(en|de)}` is not a valid placeholder, because `()` is a capturing group. Instead you can use either `{lang:en|de}` or `{lang:(?:en|de)}`.
+
+##### Wildcards
+
+THe collector came with support to wildcards in place of regexes in constraints, you can define your own wildcards with the `setWildcard(string name, string regex)` collector's method. There are 8 wildcards with more 3 aliases in a total of 11 wildcards, that are listed bellow:
+
+- uid: `uid-[a-zA-Z0-9]`
+- slug: `[a-z0-9-]`
+- string: `\w`
+- int or integer: `\d`
+- float or double: `[-+]?\d*?[.]?\d`
+- hex: `0[xX][0-9a-fA-F]`
+- octal: `0[1-7][0-7]`
+- bool or boolean: `1|0|true|false|yes|no`
+
+> **NOTE:** All the build-in **wildcards came with no quantifier**, but support [quantifiers](https://msdn.microsoft.com/en-us/library/3206d374.aspx) after they use, it's not a rule.
+
+#### Optional Segments
+
+You can define several patterns at once, with optional segments that can be nested. For optinal segments in your routes use the `[` and `]` statement to embrace the optional part. Optional segments must only be in the end of pattern and close all opened `[` with `]`. For example:
 
 ```php
-$mapper->get('/account/{name}', function ($name) {
-    echo "Hello $name!";
-});
+"/user/photos[/{id:uid}]"
 ```
 
-###Segments Constraints
-You can use the constraints to enforce a format for a dynamic segment:
+#### Unicode Characters
+
+You can specify unicode character routes directly. For example:
 
 ```php
-$mapper->get('/photos/{id:[A-Z]\d+}', 'PhotosController#show');
+"/こんにちは"
 ```
 
-This route would match paths such as `/photos/A123456`, but not `/photos/897`.
+### Actions
 
-Constraints takes regular expressions with the restriction that regex must not use capturing groups. For example `{lang:(en|de)}` is not a valid placeholder, because `()` is a capturing group. Instead you can use either `{lang:en|de}` or `{lang:(?:en|de)}`.
+Routes define a pattern that indicates what request must execute what action. An action support all the definitions ways of a [callables](http://php.net/manual/language.types.callable.php) of PHP, plus a string containing a class name and one method of these class separated by a `@`.
 
-###Wildcard Constraints
-If you don't like the regex experience you coul'd use the wildcards to map a especific pre made constraint. By default the mapper come with 6 pre made constraints or wildcards, they are: `int`, `integer`, `string`, `float`, `bool`, `boolean`. As they are self explaned, only the bool's variation need to be clarified, it match for 0, 1, false, true, no and yes.
+All the parameters defined on the route pattern are accessible to be used on a dynamic action definition. All parameters will be snake-cased, and words separator are identified by a "-" character. In the example bellow if we request `/photos/get/30` the `PhotosController`'s `getLimited` method will be called with `30` as parameter.
+
 
 ```php
-$mapper->get('/photos/{id:int}', 'PhotosController#show');
+"/{resource:string+}/get/{count:int+}" "{resource}Controller@getLimited"
 ```
 
-This route would match paths with only integers as argument, like `/photos/12345` but not `/photos/123.3` as it is a float.
-You can define your own wildcard constraints by the `setPatternWildcard` method of the mapper like this:
+#### Strategies
+
+A route must be able to execute the action. By default the action is executed by a simple `call_user_func_array` call, but you can define a more specific way to do that individually for each route or group with the `setStrategy` method, so each route can have different behaviors.
+
+To define a new strategy simply create a class that implements the `Codeburner\Router\Strategies\StrategyInterface` interface and the `call` method that receives the `Codeburner\Router\Route` matched as unique parameter. A strategy can receive the `Codeburner\Router\Matcher` using the interface `Codeburner\Router\Strategy\MatcherAwareInterface`.
+
+> **NOTE:** If it is necessary to use a container for creating the controller, please use the `setControllerCreatingFunction` method on the `Codeburner\Router\Route` object got in the `match` method of the `Codeburner\Router\Matcher`. It receives the same definition of action BUT requires return of the controller object.
+
+##### Enhancers
+
+The route enhancer strategy act like a bridge between one route and it dispatch strategy. In this "bridge" operations are made manipulating the route object to adapt it, it's common to use the [metadata informations](#defaults-and-metadata) in this place.
+
+The real strategy is defined in the route metadata, using the key `strategy`, after the execution of the enhancement logic the real strategy will be called.
+
+To create one enhancer you only need to extends the `Codeburner\Router\Strategies\EnhancerAbstractStrategy`.
+
+### Defaults and Metadata
+
+Sometimes you want to delegate more information to a route, for post match filters, strategies or even define default parameters that will be passed to the action even if they don't exist on route pattern for example.
+
+For defining parameters that will be passed to actions use the `setDefault(string key, mixed value)` method, and for persist data that will not be passed to action but used in somewhere before the execution use the `setMetadata(string key, mixed value)` method.
+
+For getting the metadata or the defined default parameters use the correspondent `Codeburner\Router\Route` getter methods, `getDefaults()` or `getMetadatas()` for getting all of each, and `getDefault(string key)` and `getMetadata(string key)` to get a specific default parameter as same as there is `hasDefault(string key)` and `hasMetadata(string key)`.
+
+> **NOTE:** For maintain the methods name convention the `getMetadatas()` have to be named with a wrong spelling, look the S at the end. 
+
+## Collector
+
+The collector hold all routes and give to the matcher, and more important than that, implements all the abstraction layer of defining routes.
+
+### Supported Methods
+
+The collector has convenience methods for setting routes that will respond differently depending on the HTTP request method by default. Each of the above routes will respond to the same URI but will invoke a different action based on the HTTP request method.
 
 ```php
-$mapper->setPatternWildcard('uid', 'uid-[a-z0-9]+');
-// ...
-$mapper->get('/user/{id:uid}', 'UserController#profile');
-```
+// Default route definition method.
+$collector->set("get", "/", "controller@action");
 
-####Quantification of Wildcard Constraint
+// Supported HTTP methods wrappers.
+$collector->get("/", "controller@action");
+$collector->post("/", "controller@action");
+$collector->put("/", "controller@action");
+$collector->patch("/", "controller@action");
+$collector->delete("/", "controller@action");
 
-Wildcards can have a quantification attribute for defining a length. The quantification attribute is exactly equal to the regex definition, {n} nor a exactly n length, {n,} for at least n length and {n,m} for at least n but no more than m length. For example, matching a string with at least 3 chars.
+// Will register in any http method.
+$collector->any("/", "controller@action");
 
-```php
-$mapper->get('/user/search/{name:string{3,}', 'UserController#search');
-```
+// Will register in any given http method.
+$collector->match(["get", "post"], "/", "controller@action");
 
-When defining wildcards, for determining the support to quantification use the `{length}` placeholder, it will be replaced by the quantification or by a `+` if the quantification was not found.
-
-```php
-$mapper->setPatternWildcard('uid', 'uid-[a-z0-9]{length}');
-// ...
-$mapper->get('/user/{id:uid}', 'UserController#profile'); // will generate /user/(uid-[a-z0-9]+)
-$mapper->get('/photo/{id:uid{10}}', 'PhotoController#show'); // will generate /photo/(uid-[a-z0-9]{10}
-```
-
-> **NOTE:** By default the `string`, `int`, `integer` and `float` wildcards supports quantification.
-
-###Optional Segments
-For optinal segments in your routes use the `[` and `]` statement to embrace the optional part. Optional segments must only be in the end of pattern and close all opened `[` with `]`. For example:
-
-```php
-$mapper->get('/users/{id:\d+}[/{name}]', function ($id, $name = 'unknown') {
-    echo "Hello $name your id is $id.";
-});
-```
-This will print `Hello alex your id is 7` for a `/users/7/alex` uri and `Hello unknown your id is 7` for a `/users/7` uri.
-
-##Action Types
-Actions are what will be executed if some route match the request, there are three ways to define this actions, see below.
-
-###Class Methods
-In one MVC application you may wish to route to a controller.
-You could call on string mode, that will explode the string in the `#` delimiter by default and create a new instance of the class.
-
-```php
-class HeisenbergController {
-    public function sayMyName($name) {
-        echo "Hello $name!";
-    }
-}
-
-$mapper->get('/heisenberg/{name}', 'HeisenbergController#sayMyName');
-```
-
-You could change the delimiter by setting it like this:
-
-```php
-$mapper->setActionDelimiter('@');
-// so the new delimiter will be @
-$mapper->get('/heisenberg/{name}', 'HeisenbergController@sayMyName');
-```
-
-Sometimes you need to call a specific method for a especific route, you don't need to register lots of routes for that, only register a global route like the example bellow, that should match `/Heisenberg/cook/1000000` for example, and execute the `HeisenbergController#cook` action with parameter 1000000.
-
-```php
-class HeisenbergController {
-    public function cook($number) {
-        echo "cooking $number cristals...";
-    }
-}
-
-$mapper->get('/{person}/{action}/{number}', '{person}Controller#{action}');
-```
-
-Or you could pass an array with two elements, the first is the object and the second is the name of method.
-
-```php
-$myHeisenbergController = new HeisenbergController;
-// ...
-$mapper->get('/heisenberg/{name}', [$myHeisenbergController, 'sayMyName']);
-```
-
-###Anonymous Functions/Closures
-
-The simpliest way to define an action, you only need to pass a closure as parameter.
-
-```php
-$mapper->post('/{entitie}/{id}/update', function ($entitie, $id) {
-    // execute the action logic...
-});
-```
-
-###Named Functions
-The same way of [Anonymous Functions/Closures](#anonymous-functionsclosures) but you define a named function and pass his name as parameter.
-
-```php
-function action1() {
-    // execute the action logic...
-}
-
-$mapper->get('/', 'action1');
-```
-
-###Dynamic Methods and Functions
-Sometimes you need to call a specific method or function for a especific route, you don't need to register lots of routes for that, only register a global route like the example bellow, that must match `/Heisenberg/cook/1000000`, and execute the `HeisenbergController#cook` action with parameter 1000000.
-
-```php
-class HeisenbergController {
-    public function cook($number) {
-        echo "cooking $number cristals...";
-    }
-}
-
-$mapper->get('/{person}/{action}/{number}', '{person}Controller#{action}');
-```
-
-This technique is applied to named functions too. For example for calling the `action1` function, just access the `/action/1` URi:
-
-```php
-function action1() {
-    // execute the action logic...
-}
-
-$mapper->get('/action/{id:int}', 'action{id}');
-```
-
-##Request Methods
-The router has convenience methods for setting routes that will respond differently depending on the HTTP request method by default. Each of the above routes will respond to the same URI but will invoke a different action based on the HTTP request method.
-
-```php
-$mapper->get('/', 'controller#action');
-$mapper->post('/', 'controller#action');
-$mapper->put('/', 'controller#action');
-$mapper->patch('/', 'controller#action');
-$mapper->delete('/', 'controller#action');
-$mapper->any('/', 'controller#action'); // will match in any request method
-$mapper->match(['get', 'post'], '/', 'controller#action'); // will match in GET and POST requests
-$mapper->except(['put', 'delete'], '/', 'controller#action'); // will match in any request method but put and delete.
+// Will register in any request method but the given ones.
+$collector->except(["put", "delete"], "/", "controller@action");
 ```
 
 > **NOTE:** Routing both GET and POST requests to a single action has security implications. In general, you should avoid routing all verbs to an action unless you have a good reason to.
 
-##Controller Collector
-If you don't wanna to define each route to a controller, you can use this helper. First you should follow some rules to get it to work.
-- Methods that will be registered __must__ begin with the correspondent HTTP method, like GET, POST, PUT, DELETE.
-- Camelcased methods will be converted to uri, each word will receive a slash `/` by prefix, like SomeMethod -> some/method.
-And that's all! Now you need only to tell the collector to craw the controller.
+### Groups
+
+All routes returned by the collector are `Codeburner\Router\Group` instances, even if it's a single route. With these groups you can use most of the `Codeburner\Router\Route` methods but applying the changes to all routes in the group. You can create groups with the `Codeburner\Router\Collector`'s `group` method that receive an array of routes.
+
+#### Namespaces
+
+For namespacing controller names, avoiding to rewrite the namespace everytime, you could use the default PHP syntax or use one of the two forms provided by the collector. The first one is using a instance of `Codeburner\Router\Group`.
 
 ```php
-class UserController {
-    public function getName() {} // will match to GET /user/name
-    public function getSomeAttribute($id) {} // will match to GET /user/some/attribute/{id}
+$collector->group([
+    $collector->get("/", "controller@action"),
+    // ...
+])->setNamespace("foo\\");
+```
+
+> **NOTE:** The alias name must be writen with an D because namespace is a PHP reserved keyword.
+
+#### Prefixes
+
+As for namespaces there is two ways to define a prefix to a group of routes, first using an instance of `Codeburner\Router\Group`:
+
+```php
+$collector->group([
+    $collector->get("/", "controller@action"),
+    // ...
+])->setPrefix("/foo");
+```
+
+#### Strategies
+
+For example, applying a strategy to several routes at same time:
+
+```php
+$collector->group([
+    $collector->get("/", "controller@action"),
+    // ...
+])->setStrategy("MyCustomStrategy");
+```
+
+#### Constraints
+
+It's focused to `Codeburner\Router\Resources` but, you can define constraints to grouped routes too.
+
+```php
+$collector->group([
+    $collector->get("/foo/{id}", "controller@foo"),
+    $collector->get("/bar/{id}", "controller@bar")
+])->setConstraint("id", "int+");
+```
+
+> **TIP:** Try using the `Codeburner\Router\Collector`'s `setWildcard` method for global constraints.
+
+### Controllers
+
+Controllers can be fully mapped by the `Codeburner\Router\Collector`, avoiding the manually description of routes to controller actions. To reach this abstraction some definitions must be respected:
+
+- Methods that can be matched **must** begin with the corresponding HTTP method, like `get`, `post`, `put`, `patch` and `delete`.
+- Camelcased method name will be converted to pattern, each word by default will receive `/` by prefix.
+
+```php
+class UserController
+{
+    public function getName()
+    {
+        // the same as $collector->get("/user/name", "UserController@getName")
+    }
 }
-
-$mapper->controller(UserController::class);
 ```
 
-As you see the paths are prefixed with the controller name, it's a default, you can disable this passing a second argument to controller collector method with a false boolean, like above:
+#### Changing Action Join
+
+If you wanna change the default pattern joiner `/` by another join like `-`, you only need to define that before the call of `Codeburner\Router\Collector`'s `controller` method.
+
+In the example bellow the pattern constructed by the `getName` method of `UserController` will be `/user-name` instead of `/user/name`.
 
 ```php
-$mapper->controller(UserController::class, false);
+$collector->setControllerActionJoin("-");
+$collector->controller("UserController");
 ```
 
-You can define a more specific constraint with [PHPDoc](http://www.phpdoc.org/) `@param` and the Match definition in the param comments:
+#### Prefixing Controllers or Ignoring Auto-Prefix
+
+By default all controller patterns receive the controller name as prefix, on previous example the `UserController` generate a `/user` prefix.
+
+You can avoid this by using the `controllerWithoutPrefix(string controller)` instead of `controller(string controller, array option = null)` method, the same way for multiple matching methods `controllers(string[] controllers)` and `controllersWithoutPrefix(string[] controllers)`.
+
+Or pass an array with the `as` option to the `controller(string controller, array option = null)`, these option will be used as prefix. eg.
 
 ```php
-class UserController {
-    /**
-     * this will match to GET /user/blog/post/{id:\d+} like /user/blog/post/123456789
-     *
-     * @param integer $id
-     */
-    public function getBlogPost($id) {}
-    
-    /**
-     * This will match to GET /user/blog/comment/{id:(\d{5})} like /user/blog/comment/98765
-     *
-     * @param integer $id Match (\d{5}) rest of the comment...
-     */
-    public function getBlogComment($id) {}
+// now the pattern for getName method will be /account/name
+$collector->controller("UserController", ["as" => "account"]);
+```
 
+#### Defining Multiple Controllers at Same Time
+
+If you need to create routes for more than one controller, you can save a bit of typing by defining them all with a single call to controllers:
+
+```php
+$collector->controllers(["PhotosController", "BooksController", "VideosController"]);
+```
+
+This works exactly the same as:
+
+```php
+$collector->controller("PhotosController");
+$collector->controller("BooksController");
+$collector->controller("VideosController");
+```
+
+
+#### Annotated Information
+
+All the [PHPDoc @param](http://www.phpdoc.org/docs/latest/references/phpdoc/tags/param.html) are parsed and the methods arguments receive a [constraint](#constraints). All the [wildcards](#wildcards) are allowed here, and you can set the type of argument as an [constraint](#constraints) too.
+
+A new annotation is available for defining [strategies](#strategies) to specific methods. For this use the `@strategy` annotation.
+
+```php
+class BlogController
+{
     /**
-     * And you can define a specific strategy for a route like this
-     *
-     * @strategy My\Specific\Dispatch\Strategy
-     * ...
+     * @param int $id
+     * @annotation MyActionExcecutorStrategy
      */
-    public function getBlogTag($id) {}
+    public function getPost($id)
+    {
+        // the same as $collector->get("/blog/post/{id:int}", "BlogController@getPost")
+        //                       ->setStrategy("MyActionExecutorStrategy")
+    }
 }
 ```
 
-##Resource Collector
-Some times you need to be more RESTFul, with the resources you can, they will define 7 routes for you. For example if you give a single entry in the collector such as:
+### Resources
+
+Resource routing allows you to quickly declare all of the common routes for a given resourceful controller. Instead of declaring separate routes for your index, show, make, edit, create, update and destroy actions, a resourceful route declares them in a single line of code.
 
 ```php
-$mapper->resource(PhotosController::class);
+$collector->resource('PhotosController');
 ```
 
-The collector will create this routes for the `PhotosController` 
+The collector will create seven new routes for `PhotosController`, as listed bellow:
 
-Method|Path|Controller#Action|Used For
----------|----|-----------------|--------
-GET | /photos | PhotosController#index | Display a list of all photos
-GET | /photos/make | PhotosController#make | Return an HTML form for creating a new photo
-POST | /photos | PhotosController#create | Create a new photo
-GET | /photos/{id} | PhotosController#show | Display a specific photo
-GET | /photos/{id}/edit | PhotosController#edit | Return an HTML form for editing a photo
-PUT | /photos/{id} | PhotosController#update | Update a specific photo
-DELETE | /photos/{id} | PhotosController#destroy | Delete a specific photo
+Method   |Path               |Controller#Action         |Used For
+---------|-------------------|--------------------------|---------------------------------------------
+GET      | /photos           | PhotosController#index   | Display a list of all photos
+GET      | /photos/make      | PhotosController#make    | Return an HTML form for creating a new photo
+POST     | /photos           | PhotosController#create  | Create a new photo
+GET      | /photos/{id}      | PhotosController#show    | Display a specific photo
+GET      | /photos/{id}/edit | PhotosController#edit    | Return an HTML form for editing a photo
+PUT      | /photos/{id}      | PhotosController#update  | Update a specific photo
+DELETE   | /photos/{id}      | PhotosController#destroy | Delete a specific photo
 
 > **NOTE:** Because the router uses the HTTP verb and URL to match inbound requests, four URLs map to seven different actions.
 
-> **NOTE:** Like Rails routes are matched in order they are specified, so if you have a resource `photos` above a get `photos/poll` the `show` action's route for the resources line will be matched before the get line. To fix this, move the get line __above__ the resources line so that it is matched first.
+#### Prefixing Resources or Ignoring Auto-Prefix
 
-###Restricting the Routes Created
-By default all the 7 routes will be created for a resource controller, but you can use the `only` and the `except` options to fine-tune this behavior. The `only` option tells to create only the specified routes.
+Works exactly the same way as [controllers](#prefixing-controllers-or-ignoring-auto-prefix) but with `resource(string resource, array options = null)` method.
 
-```php
-$mapper->resource(PhotosController::class, ['only' => ['index', 'show']]);
-```
+#### Defining Multiple Resources at Same Time
 
-Now, a GET request to `/photos` would succeed, but a POST request to `/photos` (Which would ordinarily be routed to the create action) will fail.
+The same behavior of [defining multiple controllers at same time](#defining-multiple-controllers-at-same-time).
+The multiple resource collector method is `resources(string[] resources)`.
 
-The `except` option specifies a route or list of routes that should __not__ create:
+#### Restricting Created Routes
 
-```php
-$mapper->resource(PhotosController::class, ['except' => ['destroy']]);
-```
-
-In this case, all the normal routes except the route for destroy (a DELETE request to `/photos/{id}`) will be created.
-
-> **TIP:** If your application has many RESTFul routes, using `only` and `except` to generate only the routes that actually need can cut down on memory use and speed up the routing process.
-
-##Namespacing Routes
-For working with [namespaces](http://php.net/manual/en/language.namespaces.php) the mapper uses the build-in PHP namespace syntax:
+There is two ways to define what of the seven resource routes should be created, with the `only` or `except` as option in `resource(string resource, array options = null)` method, 
 
 ```php
-namespace App\Controllers
-{
-    $mapper->resource(CategoryController::class);
-    $mapper->controller(DashboardController::class);
-    $mapper->get('/js/{file}', [AssetsController::class, 'getJsFile']);
-}
+// create only the index and show routes.
+$collector->resource("ArticleController", ["only" => ["index", "show"]]);
+
+// create only the index and show routes too, because all the others should not be created.
+$collector->resource("ArticleController", ["except" => ["make", "create", "destroy", "update", "edit"]]);
 ```
-Using the PHP 5.5 `::class` syntax you will get the full class name with a clean syntax.
 
-##Dispatcher
-The dispatcher will find a route that match the given HTTP method and URI, and use one especific strategy to call the matched route action.
-
-###Basepath
-An important point of dispatcher is that it can remove the basepath prefix from the routes that you wanna match, for this the first parameter of the dispatcher should be a string with the basepath.
-
-###Dispatch Strategies
-Sometimes a especific action must receive a especific information, like the route parameters, or a dependency from the container.
-You can define this in two ways, with the second parameter of the dispatcher that must be an implementation of `Codeburner\Router\StrategyInterface` that will apply this strategy for all routes, or, pass the third argument for the [mapper request methods](#request-methods) or even define in [comments of controller](#controller-collector) and this strategy will apply only for a choosen route.
-
-####URI Strategy
-This dispatch strategy will give your actions all the parameters of route, and this is the __default__ strategy used.
+or with the `only` and `except` methods of `Codeburner\Router\Resource` object returned by the `resource(string resource, array options = null)` method.
 
 ```php
-$mapper->get('/user/{id}', function ($id) {
-    // ...
-});
+// create only the index and show routes.
+$collector->resource("ArticleController")->only(["index", "show"]);
+
+// create only the index and show routes too, because all the others should not be created.
+$collector->resource("ArticleController")->except["make", "create", "destroy", "update", "edit"]);
 ```
 
-##Exceptions
+#### Nested Resources
 
-###Not Found
+It's common to have resources that are logically children of other resources. For example one `article` always have one `category`. Nested routes allow you to capture this relationship in your routing. In this case, you could include this route declaration:
+
+```php
+$collector->resource("CategoryController")->nest(
+    $collector->resource("ArticleController")
+);
+```
+
+In addition to the routes for `CategoryController`, this declaration will also route to `ArticleController` with one category as parameter.
+
+Method   |Path                                          |Controller#Action          |Used For
+---------|----------------------------------------------|---------------------------|-----------------------------------------------
+GET      | /category/{category_id}/article              | ArticleController#index   | Display a list of all Article
+GET      | /category/{category_id}/article/make         | ArticleController#make    | Return an HTML form for creating a new article
+POST     | /category/{category_id}/article              | ArticleController#create  | Create a new article
+GET      | /category/{category_id}/article/{id}         | ArticleController#show    | Display a specific article
+GET      | /category/{category_id}/article/{id}/edit    | ArticleController#edit    | Return an HTML form for editing a article
+PUT      | /category/{category_id}/article/{id}         | ArticleController#update  | Update a specific article
+DELETE   | /category/{category_id}/article/{id}         | ArticleController#destroy | Delete a specific article
+
+##### Limits to Nesting
+
+You can nest resources within other nested resources if you like. For example:
+
+```php
+$collector->resource("CategoryController")->nest(
+    $collector->resource("ArticleController")->nest(
+        $collector->resource("CommentController")
+    )
+);
+```
+Deeply-nested resources quickly become cumbersome. In this case, for example, the application would recognize paths such as:
+
+```php
+"/category/1/article/2/comment/3"
+```
+
+> **TIP:** Resources should never be nested more than 1 level deep.
+
+##### Shallowed Resources
+
+One way to avoid deep nesting (as recommended above) is to generate the collection actions scoped under the parent, so as to get a sense of the hierarchy, but to not nest the member actions. In other words, to only build routes with the minimal amount of information to uniquely identify the resource, like this:
+
+```php
+$collector->resource("ArticleController")->nest(
+    $collector->resource("CommentController")->only(["index", "make", "create"]);
+);
+
+$collector->resource("CommentController")->except(["index", "make", "create"]);
+```
+
+This idea strikes a balance between descriptive routes and deep nesting. There exists shorthand syntax to achieve just that, via the `shallow` method in `Codeburner\Router\Resource`:
+
+```php
+$collector->resource("ArticleController")->shallow(
+    $collector->resource("CommentController")
+);
+```
+
+This will generate the exact same routes as the first example.
+
+> **NOTE:** `shallow` method act the same way as `nest` method, so you can always nest these methods, and use one with each other. 
+
+##### Adding More RESTFul Actions
+
+You are not limited to the seven routes that RESTful routing creates by default. If you like, you may add additional routes that apply to the `Codeburner\Router\Resource`. The example above will create an additional route with `/photos/{id}/preview` pattern in `get` method.
+
+```php
+$collector->resource("PhotosController")->member(
+    $collector->get("/preview", "PhotosController@preview")
+);
+```
+
+##### Translated Patterns
+
+If you prefer to translate the patterns generated by the resource, just define an `translate` option that receives an array with one or the two keys, `new` and `edit`.
+
+```php
+$collector->resource("ArticleController", ["as" => "kategorien", "translate" => ["new" => "neu", "edit": "bearbeiten"]);
+```
+
+Or using the `translate(array translations)` method of `Codeburner\Router\Resource`.
+
+```php
+$collector->resource("ArticleController", ["as" => "kategorien"])->translate(["new" => "neu", "edit": "bearbeiten"]);
+``` 
+
+The two examples above translate `ArticleController` routes to german, changing the prefix to `kategorien` and the `new` and `edit` keywords to `neu` and `bearbeiten` respectively.
+
+## Matcher
+
+The matcher is responsable for determining which route should be executed for a given request information.
+
+### Basepath
+
+An important point of matcher is that it can remove the basepath prefix from the routes patterns, for this the first parameter of the matcher constructor should be a string with the basepath.
+
+So if you want to declare routes for a blog system living in `https://www.yourdomain.com/blog` create a new matcher that ignore the `/blog`, so all you declarations can skip this segment.
+
+### Exceptions
+
+#### Not Found
 Route not found exception `Codeburner\Router\Exceptions\NotFoundException`
 
 ```php
 try {
-    $dispatcher->dispatch('post', 'foo');
+    // ...
+    $route = $matcher->match("post", "foo");
+    // ...
 } catch (Codeburner\Router\Exceptions\NotFoundException $e) {
     // show some not found page.
     die("Request failed for method {$e->requested_method} and uri {$e->requested_uri}");
 }
 ```
 
-###Method not Allowed
+#### Method not Allowed
 Route method is wrong `Codeburner\Router\Exceptions\MethodNotAllowedException`
 
 ```php
-$mapper->get('/foo', 'controller@action');
+$collector->get("/foo", "controller@action");
 
 try {
-    $dispatcher->dispatch('post', '/foo');
+    $matcher->match("post", "/foo");
 } catch (Codeburner\Router\Exceptions\MethodNotAllowedException $e) {
     // You can for example, redirect to the correct request.
     // this if verify if the requested route can serve get requests.
-    if ($e->can('get')) {
+    if ($e->can("get")) {
         // if so, dispatch into get method.
-        $dispatcher->dispatch('get', $e->requested_uri);
+        $matcher->match("get", $e->requested_uri);
     }
 }
 ```
@@ -419,28 +557,3 @@ try {
 > **NOTE:** The HTTP specification requires that a `405 Method Not Allowed` response include the
 `Allow:` header to detail available methods for the requested resource. For this you can get a
 string with a processed allowed methods by using the `allowed` method of this exception.
-
-##Benchmark
-Codeburner Router system was compared to [Nikita's fast route](https://github.com/nikic/fastroute) and the results on an Core i5 3230m, Ram 8GB, SSD Kingston SH103S3120G with ubuntu 15.04 nginx 1.4.6 and php-fpm 5.5.9. The tests have showed theses results:
-
-package   |Matching|n routes|n args|map time|match time|usage time
-----------|--------|--------|------|--------|----------|----------
-fastroute |last    |100     |1..10 |0.0165  |0.00075   |0.01728796
-codeburner|last    |100     |1..10 |0.0066  |0.00024   |0.00685691
-fastroute |first   |100     |1..10 |0.0135  |0.00042   |0.01397585
-codeburner|first   |100     |1..10 |0.0057  |0.00016   |0.00588297
-fastroute |last    |100     |9     |0.0149  |0.00050   |0.01556897
-codeburner|last    |100     |9     |0.0070  |0.00068   |0.00763726
-fastroute |first   |100     |9     |0.0168  |0.00047   |0.01728487
-codeburner|first   |100     |9     |0.0080  |0.00048   |0.00856208
-
-Where map time is the time cost for registering all the routes, match time is the cost for find the specific route, and usage time is the sum of map and match plus the time to execute the callback of the matched route. The codeburner results have an __average of 55% faster__ usage cost than the fastroute. Note that this is average values of a simple PHP script that can be found [here](https://gist.github.com/alexrohleder96/c6ba88234e51f301a1ab)
-__NOW IS UP TO AN AVERAGE OF 70% FASTER BENCHMARK STATUS WILL BE PUBLISHED SOON.__
-
-##Todo
-- [ ] [Ruby concern concept](http://guides.rubyonrails.org/routing.html#routing-concerns).
-- [x] Route especific dispatch strategy.
-- [ ] Respond all requests with a single route.
-- [ ] Default parameters to routes.
-- [ ] Grouped routes with prefix.
-- [ ] Nested resources.

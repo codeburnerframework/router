@@ -4,17 +4,16 @@
  * Codeburner Framework.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
- * @copyright 2015 Alex Rohleder
+ * @copyright 2016 Alex Rohleder
  * @license http://opensource.org/licenses/MIT
  */
 
 namespace Codeburner\Router\Exceptions;
 
 /**
- * Codeburner Router Component.
+ * NotFoundException
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
- * @see https://github.com/codeburnerframework/router
  */
 
 class NotFoundException extends \Exception
@@ -25,28 +24,30 @@ class NotFoundException extends \Exception
      *
      * @var string
      */
-    public $requested_method;
+
+    public $requestedMethod;
 
     /**
-     * The requested URi.
+     * The requested Path.
      *
      * @var string
      */
-    public $requested_uri;
+
+    public $requestedPath;
     
     /**
      * Exception constructor.
      *
-     * @param string  $requested_method The request HTTP method.
-     * @param string  $requested_uri    The request URi.
+     * @param string  $requestedMethod  The request HTTP method.
+     * @param string  $requestedPath    The request Path.
      * @param string  $message          The exception error message.
      * @param integer $code             The exception error code.
      */
-    public function __construct($requested_method, $requested_uri, $message = null, $code = 405)
-    {
-        $this->requested_method = $requested_method;
-        $this->requested_uri    = $requested_uri;
 
+    public function __construct($requestedMethod, $requestedPath, $message = null, $code = 405)
+    {
+        $this->requestedMethod = $requestedMethod;
+        $this->requestedPath = $requestedPath;
         parent::__construct($message, $code);
     }
 	

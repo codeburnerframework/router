@@ -4,26 +4,25 @@
  * Codeburner Framework.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
- * @copyright 2015 Alex Rohleder
+ * @copyright 2016 Alex Rohleder
  * @license http://opensource.org/licenses/MIT
  */
 
 namespace Codeburner\Router\Exceptions;
 
 /**
- * Codeburner Router Component.
+ * Exception base, throwed when a given route pattern cannot
+ * be parsed, or is wrong formatted.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
- * @see https://github.com/codeburnerframework/router
  */
 
 class BadRouteException extends \Exception
 {
 
-    const UNSUPPORTED_HTTP_METHOD = "";
-    const OPTIONAL_SEGMENTS_ON_MIDDLE = "Optional segments can only occur at the end of a route.";
-    const UNCLOSED_OPTIONAL_SEGMENTS = "Number of opening [ and closing ] does not match.";
-    const EMPTY_OPTIONAL_PARTS = "Empty optional part.";
-    const BAD_DISPATCH_STRATEGY = "The route specific dispatch strategy is wrong. Check the class name.";
+    const OPTIONAL_SEGMENTS_ON_MIDDLE    = "Optional segments can only occur at the end of a route.";
+    const UNCLOSED_OPTIONAL_SEGMENTS     = "Number of opening [ and closing ] does not match.";
+    const EMPTY_OPTIONAL_PARTS           = "Empty optional part.";
+    const WRONG_CONTROLLER_CREATION_FUNC = "The controller creation function passed is not callable.";
 
 }
