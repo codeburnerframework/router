@@ -2,12 +2,13 @@
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![Build Status](https://travis-ci.org/codeburnerframework/router.svg?branch=master)](https://travis-ci.org/codeburnerframework/router)
-[![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=dev)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=dev)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/quality-score.png?b=dev)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=dev)
 
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
-An blazing fast PHP router system with amazing features and abstraction. Thank's to [Nikita Popov's](https://github.com/nikic/) for motivate me with [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
+An blazing fast PHP router system with amazing features and abstraction.
+Thank's to [Nikita Popov's](https://github.com/nikic/) for motivate me with [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
 
 ## Instalation
 
@@ -76,9 +77,9 @@ Welcome to the fastest PHP router system docs! Before starting the usage is reco
 
 ### Performance
 
-Codeburner project create packages with performance in focus, the Codeburner Router was compared with [Nikic's fast route](https://github.com/nikic/fastroute) a fast and base package for several route systems, including the [Laravel](laravel.com) and [SlimFramework](slimframework.com).
+Codeburner project create packages with performance in focus, the Codeburner Router was compared with [Nikic's fast route](https://github.com/nikic/fastroute) a fast and base package for several route systems, including the [Laravel](http://laravel.com) and [SlimFramework](http://slimframework.com).
 
-The Tests reveals that Codeburner Router can be in average **70% faster** while give a full abstraction level of handling routes. Here are some [blackfire](blackfire.io) comparison of two scripts that maps 100 routes with several arguments and execute them. The comparison can be found [here](), the script for codeburner router [here]() and the script for fastroute [here]().
+The Tests reveals that Codeburner Router can be in average **70% faster** while give a full abstraction level of handling routes. Here are some [blackfire](http://blackfire.io) comparison of two scripts that maps 100 routes with several arguments and execute them. More details about the benchmark including the comparisons and the script will be published asap.
 
 ### Connecting URLs to Code
 
@@ -99,7 +100,7 @@ The request is dispatched to the `ArticleController`'s `show` method with `17` a
 
 ## Usage Example
 
-After a sucessful installation via composer, or a manual including of `Collector.php` and `Matcher.php` you can begin using the package.
+After a successful installation via composer, or a manual including of `Collector.php` and `Matcher.php` you can begin using the package.
 
 ```php
 use Codeburner\Router\Collector;
