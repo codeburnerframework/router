@@ -4,20 +4,20 @@
  * Codeburner Framework.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
- * @copyright 2015 Alex Rohleder
+ * @copyright 2016 Alex Rohleder
  * @license http://opensource.org/licenses/MIT
  */
 
 namespace Codeburner\Router\Exceptions;
 
 /**
- * Codeburner Router Component.
+ * Exception thrown when none route is matched, but a similar
+ * route is found in another http method.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
- * @see https://github.com/codeburnerframework/router
  */
 
-class MethodNotAllowedException extends \Exception
+class MethodNotAllowedException extends BadRouteException
 {
 
     /**
@@ -25,49 +25,53 @@ class MethodNotAllowedException extends \Exception
      *
      * @var string
      */
-    public $requested_method;
+
+    public $requestedMethod;
 
     /**
      * The requested URi.
      *
      * @var string
      */
-    public $requested_uri;
+
+    public $requestedUri;
 
     /**
      * All the allowed HTTP methods and routes for the request.
      *
      * @var array
      */
-    public $allowed_methods;
+
+    public $allowedMethods;
 	
     /**
      * Exception constructor.
      *
-     * @param string  $requested_method The request HTTP method.
-     * @param string  $requested_uri    The request URi.
-     * @param array   $allowed_methods  All the allowed HTTP methods and routes for the request.
-     * @param string  $message          The exception error message.
-     * @param integer $code             The exception error code.
+     * @param string  $requestedMethod The request HTTP method.
+     * @param string  $requestedUri    The request URi.
+     * @param array   $allowedMethods  All the allowed HTTP methods and routes for the request.
+     * @param string  $message         The exception error message.
+     * @param integer $code            The exception error code.
      */
-    public function __construct($requested_method, $requested_uri, array $allowed_methods, $message = null, $code = 405)
-    {
-        $this->requested_method = $requested_method;
-        $this->requested_uri    = $requested_uri;
-        $this->allowed_methods  = $allowed_methods;
 
+    public function __construct($requestedMethod, $requestedUri, array $allowedMethods, $message = null, $code = 405)
+    {
+        $this->requestedMethod = $requestedMethod;
+        $this->requestedUri    = $requestedUri;
+        $this->allowedMethods  = $allowedMethods;
         parent::__construct($message, $code);
     }
 
     /**
      * Verify if the given HTTP method is allowed for the request.
      *
-     * @param string An HTTP method
+     * @param string $method An HTTP method
      * @return bool
      */
+
     public function can($method)
     {
-        return isset($this->allowed_methods[strtoupper($method)]);
+        return in_array(strtolower($method), $this->allowedMethods);
     }
 
     /**
@@ -77,9 +81,10 @@ class MethodNotAllowedException extends \Exception
      * @see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html section 14.7
      * @return string
      */
+    
     public function allowed()
     {
-        return implode(', ', array_keys($this->allowed_methods));
+        return implode(', ', $this->allowedMethods);
     }
 
 }
