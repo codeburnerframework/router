@@ -189,7 +189,7 @@ class Matcher
         $path = parse_url(substr(strstr(";" . $path, ";" . $this->basepath), strlen(";" . $this->basepath)), PHP_URL_PATH);
 
         if ($path === false) {
-            throw new Exception("Seriously malformed URL passed to route dispatcher.");
+            throw new Exception("Seriously malformed URL passed to route matcher.");
         }
 
         return $path;

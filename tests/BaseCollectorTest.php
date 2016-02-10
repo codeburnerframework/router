@@ -326,6 +326,8 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue($route->setControllerCreationFunction("creating")->call());
         $this->assertTrue($route->setControllerCreationFunction([$this, "controllerCreationFunction"])->call());
+        $this->setExpectedException("Codeburner\Router\Exceptions\BadRouteException");
+        $this->assertTrue($route->setControllerCreationFunction("throwError")->call());
     }
 
     public function controllerCreationFunction($controller)
@@ -352,6 +354,20 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
             $this->setExpectedException('\Codeburner\Router\Exceptions\BadRouteException');
             $this->assertTrue($route->call());
         }
+    }
+
+    public function test_MatcherBasepath()
+    {
+        $this->matcher->setBasePath('/foo');
+        $this->assertEquals('/foo', $this->matcher->getBasePath());
+        $this->collector->get('/bar', 'Foo\Bar@method');
+        $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/foo/bar'));
+    }
+
+    public function test_DynamicRouteCallback()
+    {
+        $this->collector->get('/{name}/{method}', 'Foo\{name}@{method}');
+        $this->assertTrue($this->matcher->match('get', '/bar/method')->call());
     }
 
 }
