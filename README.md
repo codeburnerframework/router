@@ -1,4 +1,4 @@
-# Codeburner Router System
+# Codeburner Router System v1
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![Build Status](https://travis-ci.org/codeburnerframework/router.svg?branch=v1.0.0)](https://travis-ci.org/codeburnerframework/router)
@@ -8,6 +8,8 @@
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
 An blazing fast PHP router system. Thank's to [Nikita Popov's](https://github.com/nikic/) for [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
+
+For a newer beta version see the dev branch, now working on v2.
 
 ##Instalation
 
@@ -435,7 +437,6 @@ fastroute |first   |100     |9     |0.0168  |0.00047   |0.01728487
 codeburner|first   |100     |9     |0.0080  |0.00048   |0.00856208
 
 Where map time is the time cost for registering all the routes, match time is the cost for find the specific route, and usage time is the sum of map and match plus the time to execute the callback of the matched route. The codeburner results have an __average of 55% faster__ usage cost than the fastroute. Note that this is average values of a simple PHP script that can be found [here](https://gist.github.com/alexrohleder96/c6ba88234e51f301a1ab)
-__NOW IS UP TO AN AVERAGE OF 70% FASTER BENCHMARK STATUS WILL BE PUBLISHED SOON.__
 
 ##Todo
 - [ ] [Ruby concern concept](http://guides.rubyonrails.org/routing.html#routing-concerns).
