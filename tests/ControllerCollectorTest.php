@@ -85,6 +85,7 @@ class ControllerCollectorTest extends PHPUnit_Framework_TestCase
         $this->collector->setControllerActionJoin("-");
         $this->collector->controller('Foo\FstController');
 
+        $this->assertEquals("-", $this->collector->getControllerActionJoin());
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/fst/foo-bar/1'));
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/fst/foo-bar/1/2'));
     }

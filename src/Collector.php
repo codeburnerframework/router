@@ -354,7 +354,7 @@ class Collector
 
     public function getWildcard($wildcard)
     {
-        return isset($this->wildcards[":$wildcard"]) ? $this->wildcards[":$wildcard"] : null;
+        return isset($this->wildcards[":$wildcard"]) ? substr($this->wildcards[":$wildcard"], 1) : null;
     }
 
     /**
