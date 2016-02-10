@@ -107,7 +107,7 @@ trait ControllerCollectorTrait
 
     /**
      * @param ReflectionClass $controller
-     * @param string[] $methods
+     * @param ReflectionMethod[] $methods
      * @param string $prefix
      *
      * @return Group
@@ -118,7 +118,6 @@ trait ControllerCollectorTrait
         $group = new Group;
         $controllerDefaultStrategy = $this->getAnnotatedStrategy($controller);
 
-        /** @var ReflectionMethod $method */
         foreach ($methods as $method) {
             $name = preg_split("~(?=[A-Z])~", $method->name);
             $http = $name[0];
