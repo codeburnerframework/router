@@ -187,8 +187,9 @@ class Route
         if (is_array($callable)) {
             if (is_string($callable[0])) {
                    $callable[0] = $this->parseCallableController($callable[0]);
-                   $callable[1] = $this->parseCallablePlaceholders($callable[1]);
-            } else $callable[1] = $this->parseCallablePlaceholders($callable[1]);
+            }
+
+            $callable[1] = $this->parseCallablePlaceholders($callable[1]);
         }
 
         return $callable;
