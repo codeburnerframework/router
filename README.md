@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-# Codeburner Router System v1
-=======
 # Codeburner Router
->>>>>>> dev
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![Build Status](https://travis-ci.org/codeburnerframework/router.svg?branch=master)](https://travis-ci.org/codeburnerframework/router)
@@ -12,15 +8,10 @@
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
 An blazing fast PHP router system with amazing features and abstraction.
+
 Thank's to [Nikita Popov's](https://github.com/nikic/) for motivate me with [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
 
-<<<<<<< HEAD
-For a newer beta version see the dev branch, now working on v2.
-
-##Instalation
-=======
 ## Instalation
->>>>>>> dev
 
 Add `codeburner/router` to your `composer.json` file, and update or install composer dependencies.
 
@@ -568,30 +559,3 @@ try {
 > **NOTE:** The HTTP specification requires that a `405 Method Not Allowed` response include the
 `Allow:` header to detail available methods for the requested resource. For this you can get a
 string with a processed allowed methods by using the `allowed` method of this exception.
-<<<<<<< HEAD
-
-##Benchmark
-Codeburner Router system was compared to [Nikita's fast route](https://github.com/nikic/fastroute) and the results on an Core i5 3230m, Ram 8GB, SSD Kingston SH103S3120G with ubuntu 15.04 nginx 1.4.6 and php-fpm 5.5.9. The tests have showed theses results:
-
-package   |Matching|n routes|n args|map time|match time|usage time
-----------|--------|--------|------|--------|----------|----------
-fastroute |last    |100     |1..10 |0.0165  |0.00075   |0.01728796
-codeburner|last    |100     |1..10 |0.0066  |0.00024   |0.00685691
-fastroute |first   |100     |1..10 |0.0135  |0.00042   |0.01397585
-codeburner|first   |100     |1..10 |0.0057  |0.00016   |0.00588297
-fastroute |last    |100     |9     |0.0149  |0.00050   |0.01556897
-codeburner|last    |100     |9     |0.0070  |0.00068   |0.00763726
-fastroute |first   |100     |9     |0.0168  |0.00047   |0.01728487
-codeburner|first   |100     |9     |0.0080  |0.00048   |0.00856208
-
-Where map time is the time cost for registering all the routes, match time is the cost for find the specific route, and usage time is the sum of map and match plus the time to execute the callback of the matched route. The codeburner results have an __average of 55% faster__ usage cost than the fastroute. Note that this is average values of a simple PHP script that can be found [here](https://gist.github.com/alexrohleder96/c6ba88234e51f301a1ab)
-
-##Todo
-- [ ] [Ruby concern concept](http://guides.rubyonrails.org/routing.html#routing-concerns).
-- [x] Route especific dispatch strategy.
-- [ ] Respond all requests with a single route.
-- [ ] Default parameters to routes.
-- [ ] Grouped routes with prefix.
-- [ ] Nested resources.
-=======
->>>>>>> dev
