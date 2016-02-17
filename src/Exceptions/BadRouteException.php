@@ -11,8 +11,7 @@
 namespace Codeburner\Router\Exceptions;
 
 /**
- * Exception base, throwed when a given route pattern cannot
- * be parsed, or is wrong formatted.
+ * Exception base, thrown when a route pattern cannot be parsed, or is wrong formatted.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
  */
@@ -24,5 +23,6 @@ class BadRouteException extends \Exception
     const UNCLOSED_OPTIONAL_SEGMENTS     = "Number of opening [ and closing ] does not match.";
     const EMPTY_OPTIONAL_PARTS           = "Empty optional part.";
     const WRONG_CONTROLLER_CREATION_FUNC = "The controller creation function passed is not callable.";
+    const BAD_STRATEGY                   = "`%s` is not a valid route dispatch strategy, it must implement the `Codeburner\\Router\\Strategies\\StrategyInterface` interface.";
 
 }

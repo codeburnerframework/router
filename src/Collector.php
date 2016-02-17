@@ -95,7 +95,7 @@ class Collector
     /**
      * @param string $method
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      *
      * @throws BadRouteException 
      * @throws MethodNotSupportedException
@@ -134,7 +134,7 @@ class Collector
      *
      * @param string[] $methods
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      *
      * @return Group
      */
@@ -151,7 +151,7 @@ class Collector
      * Insert a route into every http method supported.
      *
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      *
      * @return Group
      */
@@ -164,16 +164,16 @@ class Collector
     /**
      * Insert a route into every http method supported but the given ones.
      *
-     * @param string[] $methods
+     * @param string $methods
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      *
      * @return Group
      */
 
-    public function except(array $methods, $pattern, $action)
+    public function except($methods, $pattern, $action)
     {
-        return $this->match(array_diff(explode(" ", self::HTTP_METHODS), $methods), $pattern, $action);
+        return $this->match(array_diff(explode(" ", self::HTTP_METHODS), (array) $methods), $pattern, $action);
     }
 
     /**
@@ -227,7 +227,7 @@ class Collector
     /**
      * Separate routes pattern with optional parts into n new patterns.
      *
-     * @param  string $pattern
+     * @param string $pattern
      * @return array
      */
 
@@ -354,17 +354,20 @@ class Collector
 
     public function getWildcard($wildcard)
     {
-        return isset($this->wildcards[":$wildcard"]) ? $this->wildcards[":$wildcard"] : null;
+        return isset($this->wildcards[":$wildcard"]) ? substr($this->wildcards[":$wildcard"], 1) : null;
     }
 
     /**
      * @param string $wildcard
      * @param string $pattern
+     *
+     * @return self
      */
 
     public function setWildcard($wildcard, $pattern)
     {
         $this->wildcards[":$wildcard"] = ":$pattern";
+        return $this;
     }
     
 }

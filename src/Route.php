@@ -42,7 +42,7 @@ class Route
     protected $pattern;
     
     /**
-     * @var string|array|\Closure
+     * @var callable
      */
 
     protected $action;
@@ -102,7 +102,7 @@ class Route
     /**
      * The function used to create controllers from name.
      *
-     * @var string|array|\Closure
+     * @var callable
      */
 
     protected $controllerCreationFunction;
@@ -111,7 +111,7 @@ class Route
      * @param Collector $collector
      * @param string $method
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      */
 
     public function __construct(Collector $collector, $method, $pattern, $action)
@@ -171,17 +171,21 @@ class Route
     }
 
     /**
-     * Seek for dynamic content on callables. eg. routes action controller#action
-     * syntax allow to use the variables to build the string like: {controller}@{action}
+     * Seek for dynamic content in one callable. This allow to use parameters defined on pattern on callable
+     * definition, eg. "get" "/{resource:string+}/{slug:slug+}" "{resource}::find".
      *
-     * @param string|array|\Closure $callable
-     * @return string|array|\Closure
+     * This will snakecase the resource parameter and deal with as a controller, then call the find method.
+     * A request for "/articles/my-first-article" will execute find method of Articles controller with only
+     * "my-first-article" as parameter.
+     *
+     * @param callable $callable
+     * @return callable
      */
 
     private function parseCallable($callable)
     {
-        if (is_string($callable) && strpos($callable, "@")) {
-            $callable = explode("@", $callable);
+        if (is_string($callable) && strpos($callable, "::")) {
+            $callable = explode("::", $callable);
         }
 
         if (is_array($callable)) {
@@ -214,7 +218,7 @@ class Route
     /**
      * Parse and replace dynamic content on route action.
      *
-     * @param  string $fragment Part of callable
+     * @param string $fragment Part of callable
      * @return string
      */
 
@@ -248,9 +252,7 @@ class Route
             return $this->strategy->call($this);
         }
 
-        $strategy = get_class($this->strategy);
-        throw new BadRouteException("`$strategy` is not a valid route dispatch strategy, ".
-            "it must implement the `Codeburner\\Router\\Strategies\\StrategyInterface` interface.");
+        throw new BadRouteException(str_replace("%s", get_class($this->strategy), BadRouteException::BAD_STRATEGY));
     }
 
     /**
@@ -290,7 +292,7 @@ class Route
     }
 
     /**
-     * @return string|array|\Closure
+     * @return callable
      */
 
     public function getAction()
@@ -324,6 +326,17 @@ class Route
     public function getParam($key)
     {
         return $this->params[$key];
+    }
+
+    /**
+     * Return defaults and params merged in one array.
+     *
+     * @return array
+     */
+
+    public function getMergedParams()
+    {
+        return array_merge($this->defaults, $this->params);
     }
 
     /**
@@ -378,7 +391,7 @@ class Route
     }
 
     /**
-     * @inheritdoc
+     * @return Matcher
      */
 
     public function getMatcher()
@@ -552,7 +565,8 @@ class Route
     }
 
     /**
-     * @inheritdoc
+     * @param Matcher $matcher
+     * @return self
      */
 
     public function setMatcher(Matcher $matcher)
@@ -588,7 +602,7 @@ class Route
     /**
      * Set a function to create controllers.
      *
-     * @param string|array|\Closure $callable
+     * @param callable $callable
      * @throws BadRouteException
      * @return self
      */

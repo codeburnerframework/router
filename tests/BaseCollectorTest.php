@@ -96,27 +96,27 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
             $this->assertTrue($route->call());
         }
 
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->matcher->match('get', '/a');
     }
 
     public function test_ControllerAction()
     {
-        $this->collector->set('get', '/', 'Foo\Bar@method');
+        $this->collector->set('get', '/', 'Foo\Bar::method');
         $this->assertTrue($this->matcher->match('get', '/')->call());
     }
 
     public function test_NotFoundException()
     {
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
-        $this->collector->set('get', '/', 'Foo\Bar@method');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
+        $this->collector->set('get', '/', 'Foo\Bar::method');
         $this->matcher->match('get', '/foo');
     }
 
     public function test_MethodNotAllowedException()
     {
-        $this->setExpectedException('Codeburner\Router\Exceptions\MethodNotAllowedException');
-        $this->collector->set('get', '/', 'Foo\Bar@method');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\MethodNotAllowedException');
+        $this->collector->set('get', '/', 'Foo\Bar::method');
         $this->matcher->match('post', '/');
     }
 
@@ -125,7 +125,7 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
         try {
             $this->collector->get("/", "");
             $this->matcher->match("post", "/");
-        } catch (\Codeburner\Router\Exceptions\MethodNotAllowedException $e) {
+        } catch (\Codeburner\Router\Exceptions\Http\MethodNotAllowedException $e) {
             $this->assertTrue($e->can("get"));
             $this->assertEquals("get", $e->allowed());
         }
@@ -133,7 +133,7 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_AnyMethod()
     {
-        $this->collector->any('/', 'Foo\Bar@method');
+        $this->collector->any('/', 'Foo\Bar::method');
 
         foreach ($this->methods as $method) {
             $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match($method, '/'));
@@ -143,8 +143,8 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     public function test_ExceptMethod()
     {
         $excepts = ['get', 'post'];
-        $this->setExpectedException('Codeburner\Router\Exceptions\MethodNotAllowedException');
-        $this->collector->except($excepts, '/', 'Foo\Bar@method');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\MethodNotAllowedException');
+        $this->collector->except($excepts, '/', 'Foo\Bar::method');
 
         foreach ($excepts as $except) {
             $this->matcher->match($except, '/');
@@ -158,7 +158,7 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     public function test_MatchMethod()
     {
         $methods = ['get', 'post'];
-        $this->collector->match($methods, '/', 'Foo\Bar@method');
+        $this->collector->match($methods, '/', 'Foo\Bar::method');
 
         foreach ($methods as $method) {
             $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match($method, '/'));
@@ -168,7 +168,7 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     public function test_HttpMethods()
     {
         foreach ($this->methods as $method) {
-            $this->collector->$method('/', 'Foo\Bar@method');
+            $this->collector->$method('/', 'Foo\Bar::method');
             $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match($method, '/'));
         }
     }
@@ -176,8 +176,8 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     public function test_Group()
     {
         $group = $this->collector->group([
-            $this->collector->get('/', 'Foo\Bar@method'),
-            $this->collector->get('/foo', 'Foo\Bar@method')
+            $this->collector->get('/', 'Foo\Bar::method'),
+            $this->collector->get('/foo', 'Foo\Bar::method')
         ]);
 
         $this->assertInstanceOf('Codeburner\Router\Group', $group);
@@ -187,37 +187,133 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     public function test_GroupConstraint()
     {
         $group = $this->collector->group([
-            $this->collector->get('/{id:int}', 'Foo\Bar@method')
+            $this->collector->get('/{id:int}', 'Foo\Bar::method')
         ]);
 
         $group->setConstraint('id', 'uid+');
 
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/uid-1'));
 
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/3'));
+    }
+
+    public function test_GroupMethod()
+    {
+        $group = $this->collector->group([
+            $this->collector->get('/foo', 'Foo\Bar::method'),
+            $this->collector->put('/bar', 'Foo\Bar::method')
+        ]);
+
+        $group->setMethod('post');
+
+        $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('post', '/foo'));
+        $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('post', '/bar'));
+    }
+
+    public function test_GroupAction()
+    {
+        $group = $this->collector->group([
+            $this->collector->get('/foo', 'Foo\Bar::method'),
+            $this->collector->get('/bar', 'Foo\Bar::method')
+        ]);
+
+        $group->setAction(function () {
+            return 2;
+        });
+
+        $this->assertEquals(2, $this->matcher->match('get', '/foo')->call());
+        $this->assertEquals(2, $this->matcher->match('get', '/bar')->call());
+    }
+
+    public function test_GroupNamespace()
+    {
+        $group = $this->collector->group([
+            $this->collector->get('/foo', 'Bar::method'),
+            $this->collector->get('/bar', 'Bar::method')
+        ]);
+
+        $group->setNamespace('Foo\\');
+
+        $this->assertTrue($this->matcher->match('get', '/foo')->call());
+        $this->assertTrue($this->matcher->match('get', '/bar')->call());
+    }
+
+    public function test_GroupMetadata()
+    {
+        $group = $this->collector->group([
+            $this->collector->get('/foo', 'Foo\Bar::method'),
+            $this->collector->get('/bar', 'Foo\Bar::method')
+        ]);
+
+        $group->setMetadata('test', 23);
+        $this->assertEquals(23, $this->matcher->match('get', '/foo')->getMetadata('test'));
+    }
+
+    public function test_GroupMetadataArray()
+    {
+        $group = $this->collector->group([
+            $this->collector->get('/foo', 'Foo\Bar::method'),
+            $this->collector->get('/bar', 'Foo\Bar::method')
+        ]);
+
+        $group->setMetadataArray(['test' => 23, 'test2' => 21]);
+        $this->assertEquals(['test' => 23, 'test2' => 21], $this->matcher->match('get', '/foo')->getMetadataArray());
+    }
+
+    public function test_GroupDefault()
+    {
+        $group = $this->collector->group([
+            $this->collector->get('/foo/{id}', 'Foo\Bar::method'),
+            $this->collector->get('/bar/{id}', 'Foo\Bar::method')
+        ]);
+
+        $group->setAction(function ($test, $id) {
+            return $id == 1 && $test == 23;
+        });
+
+        $group->setDefault('test', 23);
+        $this->assertEquals(23, $this->matcher->match('get', '/foo/1')->getDefault('test'));
+        $this->assertTrue($this->matcher->match('get', '/foo/1')->call());
+    }
+
+    public function test_GroupDefaults()
+    {
+        $group = $this->collector->group([
+            $this->collector->get('/foo/{id}', 'Foo\Bar::method'),
+            $this->collector->get('/bar/{id}', 'Foo\Bar::method')
+        ]);
+
+        $group->setAction(function ($test1, $test2, $id) {
+            return $id == 1 && $test1 == 23 && $test2 == 21;
+        });
+
+        $group->setDefaults(['test1' => 23, 'test2' => 21]);
+        $this->assertEquals(['test1' => 23, 'test2' => 21], $this->matcher->match('get', '/foo/1')->getDefaults());
+        $this->assertTrue($this->matcher->match('get', '/foo/1')->call());
     }
 
     public function test_WildcardSupport()
     {
-        $this->collector->get('/foo/{id:int+}', 'Foo\Bar@method');
+        $this->collector->get('/foo/{id:int+}', 'Foo\Bar::method');
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/foo/123'));
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->matcher->match('get', '/foo/a');
     }
 
     public function test_CustomWildcardSupport()
     {
         $this->collector->setWildcard('test', '\d');
-        $this->collector->get('/foo/{id:test+}', 'Foo\Bar@method');
+        $this->collector->get('/foo/{id:test+}', 'Foo\Bar::method');
+        $this->assertEquals("\d", $this->collector->getWildcard('test'));
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/foo/123'));
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->matcher->match('get', '/foo/a');
     }
 
     public function test_ControllerCreatingFunction()
     {
-        $this->collector->get('/foo/{id:int+}', 'Foo\Bar@method');
+        $this->collector->get('/foo/{id:int+}', 'Foo\Bar::method');
         $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
 
         $this->assertTrue($route->setControllerCreationFunction(function ($controller) {
@@ -230,6 +326,8 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue($route->setControllerCreationFunction("creating")->call());
         $this->assertTrue($route->setControllerCreationFunction([$this, "controllerCreationFunction"])->call());
+        $this->setExpectedException('Codeburner\Router\Exceptions\BadRouteException');
+        $this->assertTrue($route->setControllerCreationFunction("throwError")->call());
     }
 
     public function controllerCreationFunction($controller)
@@ -237,25 +335,18 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
         return new $controller;
     }
 
-    public function test_Strategy_MatcherAwareStrategy()
+    public function test_MatcherBasepath()
     {
-        $this->collector->get('/foo/{id:int+}', 'Foo\Bar@method')->setStrategy('Foo\CustomStrategy');
-        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
-
-        if ($route) {
-            $this->assertEquals(1, $route->call());
-        }
+        $this->matcher->setBasePath('/foo');
+        $this->assertEquals('/foo', $this->matcher->getBasePath());
+        $this->collector->get('/bar', 'Foo\Bar::method');
+        $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/foo/bar'));
     }
 
-    public function test_StrategyException()
+    public function test_DynamicRouteCallback()
     {
-        $this->collector->get('/foo/{id:int+}', 'Foo\Bar@method')->setStrategy('Foo\CustomWrongStrategy');
-        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
-
-        if ($route) {
-            $this->setExpectedException('\Codeburner\Router\Exceptions\BadRouteException');
-            $this->assertTrue($route->call());
-        }
+        $this->collector->get('/{name}/{method}', 'Foo\{name}::{method}');
+        $this->assertTrue($this->matcher->match('get', '/bar/method')->call());
     }
 
 }

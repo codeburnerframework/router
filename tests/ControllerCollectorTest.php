@@ -85,6 +85,7 @@ class ControllerCollectorTest extends PHPUnit_Framework_TestCase
         $this->collector->setControllerActionJoin("-");
         $this->collector->controller('Foo\FstController');
 
+        $this->assertEquals("-", $this->collector->getControllerActionJoin());
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/fst/foo-bar/1'));
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/fst/foo-bar/1/2'));
     }
@@ -94,7 +95,7 @@ class ControllerCollectorTest extends PHPUnit_Framework_TestCase
         $this->collector->controller('Foo\TrdController');
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/annotated/foo/1'));
         
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->matcher->match('get', '/annotated/foo/a');
     }
 
