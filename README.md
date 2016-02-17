@@ -170,13 +170,13 @@ You can specify unicode character routes directly. For example:
 
 ### Actions
 
-Routes define a pattern that indicates what request must execute what action. An action support all the definitions ways of a [callables](http://php.net/manual/language.types.callable.php) of PHP, plus a string containing a class name and one method of these class separated by a `@`.
+Routes define a pattern that indicates what request must execute what action. An action support all the definitions ways of a [callables](http://php.net/manual/language.types.callable.php) of PHP.
 
 All the parameters defined on the route pattern are accessible to be used on a dynamic action definition. All parameters will be snake-cased, and words separator are identified by a "-" character. In the example bellow if we request `/photos/get/30` the `PhotosController`'s `getLimited` method will be called with `30` as parameter.
 
 
 ```php
-"/{resource:string+}/get/{count:int+}" "{resource}Controller@getLimited"
+"/{resource:string+}/get/{count:int+}" "{resource}Controller::getLimited"
 ```
 
 #### Strategies
@@ -215,23 +215,23 @@ The collector has convenience methods for setting routes that will respond diffe
 
 ```php
 // Default route definition method.
-$collector->set("get", "/", "controller@action");
+$collector->set("get", "/", "controller::action");
 
 // Supported HTTP methods wrappers.
-$collector->get("/", "controller@action");
-$collector->post("/", "controller@action");
-$collector->put("/", "controller@action");
-$collector->patch("/", "controller@action");
-$collector->delete("/", "controller@action");
+$collector->get("/", "controller::action");
+$collector->post("/", "controller::action");
+$collector->put("/", "controller::action");
+$collector->patch("/", "controller::action");
+$collector->delete("/", "controller::action");
 
 // Will register in any http method.
-$collector->any("/", "controller@action");
+$collector->any("/", "controller::action");
 
 // Will register in any given http method.
-$collector->match(["get", "post"], "/", "controller@action");
+$collector->match(["get", "post"], "/", "controller::action");
 
 // Will register in any request method but the given ones.
-$collector->except(["put", "delete"], "/", "controller@action");
+$collector->except(["put", "delete"], "/", "controller::action");
 ```
 
 > **NOTE:** Routing both GET and POST requests to a single action has security implications. In general, you should avoid routing all verbs to an action unless you have a good reason to.
@@ -246,7 +246,7 @@ For namespacing controller names, avoiding to rewrite the namespace everytime, y
 
 ```php
 $collector->group([
-    $collector->get("/", "controller@action"),
+    $collector->get("/", "controller::action"),
     // ...
 ])->setNamespace("foo\\");
 ```
@@ -259,7 +259,7 @@ As for namespaces there is two ways to define a prefix to a group of routes, fir
 
 ```php
 $collector->group([
-    $collector->get("/", "controller@action"),
+    $collector->get("/", "controller::action"),
     // ...
 ])->setPrefix("/foo");
 ```
@@ -270,7 +270,7 @@ For example, applying a strategy to several routes at same time:
 
 ```php
 $collector->group([
-    $collector->get("/", "controller@action"),
+    $collector->get("/", "controller::action"),
     // ...
 ])->setStrategy("MyCustomStrategy");
 ```
@@ -281,8 +281,8 @@ It's focused to `Codeburner\Router\Resources` but, you can define constraints to
 
 ```php
 $collector->group([
-    $collector->get("/foo/{id}", "controller@foo"),
-    $collector->get("/bar/{id}", "controller@bar")
+    $collector->get("/foo/{id}", "controller::foo"),
+    $collector->get("/bar/{id}", "controller::bar")
 ])->setConstraint("id", "int+");
 ```
 
@@ -300,7 +300,7 @@ class UserController
 {
     public function getName()
     {
-        // the same as $collector->get("/user/name", "UserController@getName")
+        // the same as $collector->get("/user/name", "UserController::getName")
     }
 }
 ```
@@ -361,7 +361,7 @@ class BlogController
      */
     public function getPost($id)
     {
-        // the same as $collector->get("/blog/post/{id:int}", "BlogController@getPost")
+        // the same as $collector->get("/blog/post/{id:int}", "BlogController::getPost")
         //                       ->setStrategy("MyActionExecutorStrategy")
     }
 }
@@ -491,7 +491,7 @@ You are not limited to the seven routes that RESTful routing creates by default.
 
 ```php
 $collector->resource("PhotosController")->member(
-    $collector->get("/preview", "PhotosController@preview")
+    $collector->get("/preview", "PhotosController::preview")
 );
 ```
 
@@ -541,7 +541,7 @@ try {
 Route method is wrong `Codeburner\Router\Exceptions\MethodNotAllowedException`
 
 ```php
-$collector->get("/foo", "controller@action");
+$collector->get("/foo", "controller::action");
 
 try {
     $matcher->match("post", "/foo");

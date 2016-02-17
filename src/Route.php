@@ -171,8 +171,12 @@ class Route
     }
 
     /**
-     * Seek for dynamic content in one callable. eg. routes action controller@action
-     * syntax allow to use the variables to build the string like: {controller}@{action}
+     * Seek for dynamic content in one callable. This allow to use parameters defined on pattern on callable
+     * definition, eg. "get" "/{resource:string+}/{slug:slug+}" "{resource}::find".
+     *
+     * This will snakecase the resource parameter and deal with as a controller, then call the find method.
+     * A request for "/articles/my-first-article" will execute find method of Articles controller with only
+     * "my-first-article" as parameter.
      *
      * @param callable $callable
      * @return callable
@@ -180,8 +184,8 @@ class Route
 
     private function parseCallable($callable)
     {
-        if (is_string($callable) && strpos($callable, "@")) {
-            $callable = explode("@", $callable);
+        if (is_string($callable) && strpos($callable, "::")) {
+            $callable = explode("::", $callable);
         }
 
         if (is_array($callable)) {
