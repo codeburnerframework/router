@@ -316,18 +316,16 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
         $this->collector->get('/foo/{id:int+}', 'Foo\Bar::method');
         $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
 
-        $this->assertTrue($route->setControllerCreationFunction(function ($controller) {
+        $this->assertTrue($route->call(function ($controller) {
             return new $controller;
-        })->call());
+        }));
 
         function creating($controller) {
             return new $controller;
         }
 
-        $this->assertTrue($route->setControllerCreationFunction("creating")->call());
-        $this->assertTrue($route->setControllerCreationFunction([$this, "controllerCreationFunction"])->call());
-        $this->setExpectedException('Codeburner\Router\Exceptions\BadRouteException');
-        $this->assertTrue($route->setControllerCreationFunction("throwError")->call());
+        $this->assertTrue($route->call("creating"));
+        $this->assertTrue($route->call([$this, "controllerCreationFunction"]));
     }
 
     public function controllerCreationFunction($controller)

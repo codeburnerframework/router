@@ -28,25 +28,25 @@ class Route
      */
 
     protected $collector;
-    
+
     /**
      * @var string
      */
 
     protected $method;
-    
+
     /**
      * @var string
      */
 
     protected $pattern;
-    
+
     /**
      * @var callable
      */
 
     protected $action;
-    
+
     /**
      * @var string
      */
@@ -151,20 +151,23 @@ class Route
      * Execute the route action, if no strategy was provided the action
      * will be executed by the call_user_func PHP function.
      *
+     * @param callable $container
      * @throws BadRouteException
      * @return mixed
      */
 
-    public function call()
+    public function call(callable $container = null)
     {
-        $this->action = $this->parseCallable($this->action);
+        $this->action = $this->buildCallable($this->action, $container);
 
         if ($this->strategy === null) {
             return call_user_func_array($this->action, array_merge($this->defaults, $this->params));
         }
 
         if (!is_object($this->strategy)) {
-            $this->strategy = new $this->strategy;
+            if ($container === null) {
+                   $this->strategy = new $this->strategy;
+            } else $this->strategy = $container($this->strategy);
         }
 
         return $this->callWithStrategy();
@@ -179,10 +182,12 @@ class Route
      * "my-first-article" as parameter.
      *
      * @param callable $callable
+     * @param callable $container
+     *
      * @return callable
      */
 
-    private function parseCallable($callable)
+    private function buildCallable($callable, $container)
     {
         if (is_string($callable) && strpos($callable, "::")) {
             $callable = explode("::", $callable);
@@ -190,7 +195,7 @@ class Route
 
         if (is_array($callable)) {
             if (is_string($callable[0])) {
-                   $callable[0] = $this->parseCallableController($callable[0]);
+                   $callable[0] = $this->parseCallableController($callable[0], $container);
             }
 
             $callable[1] = $this->parseCallablePlaceholders($callable[1]);
@@ -203,16 +208,18 @@ class Route
      * Get the controller object.
      *
      * @param string $controller
+     * @param callable $container
+     *
      * @return Object
      */
 
-    private function parseCallableController($controller)
+    private function parseCallableController($controller, $container)
     {
         $controller  = rtrim($this->namespace, "\\") . "\\" . $this->parseCallablePlaceholders($controller);
 
-        if ($this->controllerCreationFunction === null) {
+        if ($container === null) {
                return new $controller;
-        } else return call_user_func($this->controllerCreationFunction, $controller);
+        } else return $container($controller);
     }
 
     /**
@@ -596,24 +603,6 @@ class Route
             $this->setPatternWithoutReset($newPattern);
         }
 
-        return $this;
-    }
-
-    /**
-     * Set a function to create controllers.
-     *
-     * @param callable $callable
-     * @throws BadRouteException
-     * @return self
-     */
-
-    public function setControllerCreationFunction($callable)
-    {
-        if (!is_callable($callable)) {
-            throw new BadRouteException(BadRouteException::WRONG_CONTROLLER_CREATION_FUNC);
-        }
-
-        $this->controllerCreationFunction = $this->parseCallable($callable);
         return $this;
     }
 
