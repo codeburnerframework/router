@@ -329,6 +329,17 @@ class Route
     }
 
     /**
+     * Return defaults and params merged in one array.
+     *
+     * @return array
+     */
+
+    public function getMergedParams()
+    {
+        return array_merge($this->defaults, $this->params);
+    }
+
+    /**
      * @return array
      */
 

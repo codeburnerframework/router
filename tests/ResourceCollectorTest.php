@@ -64,7 +64,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
     {
         $actions = ['index', 'show'];
         $this->collector->resource('Resource', ['as' => 'test', 'only' => $actions]);
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->doTestActions($actions);
     }
 
@@ -72,7 +72,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
     {
         $actions = ['index', 'show'];
         $this->collector->resource('Resource', ['as' => 'test', 'except' => $actions]);
-        $this->setExpectedException('Codeburner\Router\Exceptions\MethodNotAllowedException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\MethodNotAllowedException');
         $this->doTestActions(array_diff(array_keys($this->actions), $actions));
     }
 
@@ -80,7 +80,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
     {
         $actions = ['index', 'show'];
         $this->collector->resource('Resource', ['as' => 'test'])->only($actions);
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->doTestActions($actions);
     }
 
@@ -88,7 +88,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
     {
         $actions = ['index', 'show'];
         $this->collector->resource('Resource', ['as' => 'test'])->except($actions);
-        $this->setExpectedException('Codeburner\Router\Exceptions\MethodNotAllowedException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\MethodNotAllowedException');
         $this->doTestActions(array_diff(array_keys($this->actions), $actions));
     }
 
@@ -125,7 +125,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('post', '/fst/1/snd'));
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/fst/1/snd/make'));
 
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('post', '/fst/1/snd/2/edit'));
     }
 
