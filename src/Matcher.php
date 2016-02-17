@@ -135,7 +135,7 @@ class Matcher
      * Group several dynamic routes patterns into one big regex and maps
      * the routes to the pattern positions in the big regex.
      *
-     * @param array $routes
+     * @param Route[] $routes
      * @return array
      */
 
@@ -143,7 +143,6 @@ class Matcher
     {
         $groupCount = (int) $map = $regex = [];
 
-        /** @var Route $route */
         foreach ($routes as $route) {
             $params           = $route->getParams();
             $paramsCount      = count($params);
@@ -252,7 +251,7 @@ class Matcher
     /**
      * Strip the given http methods and return all the others.
      *
-     * @param  array|string
+     * @param string|string[]
      * @return array
      */
 

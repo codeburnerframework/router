@@ -33,7 +33,7 @@ class Resource extends Group
     /**
      * Remove the routes without the passed methods.
      *
-     * @param string|array $methods
+     * @param string|string[] $methods
      * @return self
      */
 
@@ -46,7 +46,7 @@ class Resource extends Group
     /**
      * Remove the routes with the passed methods.
      *
-     * @param string|array $methods
+     * @param string|string[] $methods
      * @return self
      */
 
@@ -59,7 +59,7 @@ class Resource extends Group
     /**
      * Forget the grouped routes filtering by http methods.
      *
-     * @param array $methods
+     * @param string[] $methods
      * @param bool $alt Should remove?
      */
 
@@ -83,7 +83,6 @@ class Resource extends Group
 
     public function translate(array $translations)
     {
-        /** @var Route $route */
         foreach ($this->routes as $route) {
             $action = $route->getAction()[1];
 

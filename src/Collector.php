@@ -95,7 +95,7 @@ class Collector
     /**
      * @param string $method
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      *
      * @throws BadRouteException 
      * @throws MethodNotSupportedException
@@ -134,7 +134,7 @@ class Collector
      *
      * @param string[] $methods
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      *
      * @return Group
      */
@@ -151,7 +151,7 @@ class Collector
      * Insert a route into every http method supported.
      *
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      *
      * @return Group
      */
@@ -166,7 +166,7 @@ class Collector
      *
      * @param string $methods
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      *
      * @return Group
      */
@@ -227,7 +227,7 @@ class Collector
     /**
      * Separate routes pattern with optional parts into n new patterns.
      *
-     * @param  string $pattern
+     * @param string $pattern
      * @return array
      */
 

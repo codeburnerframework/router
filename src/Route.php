@@ -42,7 +42,7 @@ class Route
     protected $pattern;
     
     /**
-     * @var string|array|\Closure
+     * @var callable
      */
 
     protected $action;
@@ -102,7 +102,7 @@ class Route
     /**
      * The function used to create controllers from name.
      *
-     * @var string|array|\Closure
+     * @var callable
      */
 
     protected $controllerCreationFunction;
@@ -111,7 +111,7 @@ class Route
      * @param Collector $collector
      * @param string $method
      * @param string $pattern
-     * @param string|array|\Closure $action
+     * @param callable $action
      */
 
     public function __construct(Collector $collector, $method, $pattern, $action)
@@ -171,11 +171,11 @@ class Route
     }
 
     /**
-     * Seek for dynamic content on callables. eg. routes action controller#action
+     * Seek for dynamic content in one callable. eg. routes action controller@action
      * syntax allow to use the variables to build the string like: {controller}@{action}
      *
-     * @param string|array|\Closure $callable
-     * @return string|array|\Closure
+     * @param callable $callable
+     * @return callable
      */
 
     private function parseCallable($callable)
@@ -214,7 +214,7 @@ class Route
     /**
      * Parse and replace dynamic content on route action.
      *
-     * @param  string $fragment Part of callable
+     * @param string $fragment Part of callable
      * @return string
      */
 
@@ -290,7 +290,7 @@ class Route
     }
 
     /**
-     * @return string|array|\Closure
+     * @return callable
      */
 
     public function getAction()
@@ -378,7 +378,7 @@ class Route
     }
 
     /**
-     * @inheritdoc
+     * @return Matcher
      */
 
     public function getMatcher()
@@ -552,7 +552,8 @@ class Route
     }
 
     /**
-     * @inheritdoc
+     * @param Matcher $matcher
+     * @return self
      */
 
     public function setMatcher(Matcher $matcher)
@@ -588,7 +589,7 @@ class Route
     /**
      * Set a function to create controllers.
      *
-     * @param string|array|\Closure $callable
+     * @param callable $callable
      * @throws BadRouteException
      * @return self
      */
