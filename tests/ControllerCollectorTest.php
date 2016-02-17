@@ -95,7 +95,7 @@ class ControllerCollectorTest extends PHPUnit_Framework_TestCase
         $this->collector->controller('Foo\TrdController');
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/annotated/foo/1'));
         
-        $this->setExpectedException('Codeburner\Router\Exceptions\NotFoundException');
+        $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->matcher->match('get', '/annotated/foo/a');
     }
 

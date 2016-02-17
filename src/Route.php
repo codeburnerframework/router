@@ -252,9 +252,7 @@ class Route
             return $this->strategy->call($this);
         }
 
-        $strategy = get_class($this->strategy);
-        throw new BadRouteException("`$strategy` is not a valid route dispatch strategy, ".
-            "it must implement the `Codeburner\\Router\\Strategies\\StrategyInterface` interface.");
+        throw new BadRouteException(str_replace("%s", get_class($this->strategy), BadRouteException::BAD_STRATEGY));
     }
 
     /**
@@ -328,6 +326,17 @@ class Route
     public function getParam($key)
     {
         return $this->params[$key];
+    }
+
+    /**
+     * Return defaults and params merged in one array.
+     *
+     * @return array
+     */
+
+    public function getMergedParams()
+    {
+        return array_merge($this->defaults, $this->params);
     }
 
     /**

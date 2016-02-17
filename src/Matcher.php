@@ -10,8 +10,8 @@
 
 namespace Codeburner\Router;
 
-use Codeburner\Router\Exceptions\MethodNotAllowedException;
-use Codeburner\Router\Exceptions\NotFoundException;
+use Codeburner\Router\Exceptions\Http\MethodNotAllowedException;
+use Codeburner\Router\Exceptions\Http\NotFoundException;
 use Exception;
 
 /**
@@ -213,7 +213,7 @@ class Matcher
             throw new MethodNotAllowedException($httpMethod, $path, array_merge((array) $sm, (array) $dm));
         }
 
-        throw new NotFoundException($httpMethod, $path);
+        throw new NotFoundException;
     }
 
     /**

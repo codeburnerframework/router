@@ -1,7 +1,7 @@
 {
     "name": "codeburner/router",
     "description": "The amazing Codeburner framework Router system.",
-    "keywords": ["router", "dispacher", "codeburner"],
+    "keywords": ["router", "dispatcher", "codeburner"],
     "license": "MIT",
     "type": "library",
     "authors": [
@@ -11,10 +11,12 @@
         }
     ],
     "require": {
-        "php": ">=5.5.0"
+        "php": ">=5.5.0",
+        "psr/http-message": "~1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.0"
+        "phpunit/phpunit": "~4.0",
+        "zendframework/zend-diactoros": "^1.3"
     },
     "autoload": {
         "psr-4": {
