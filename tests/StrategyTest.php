@@ -62,4 +62,39 @@ class StrategyTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function test_RequestResponseStrategy()
+    {
+        $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::RequestResponse')
+            ->setStrategy(new RequestResponseStrategy($this->request, $this->response));
+        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+
+        if ($route) {
+            $this->assertInstanceOf('Psr\Http\Message\ResponseInterface', $response = $route->call());
+        }
+    }
+
+    public function test_RequestJsonStrategy()
+    {
+        $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::RequestJson')
+            ->setStrategy(new RequestJsonStrategy($this->request, $this->response));
+        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+
+        if ($route) {
+            $this->assertInstanceOf('Psr\Http\Message\ResponseInterface', $response = $route->call());
+            $this->assertEquals('{"test":1}', (string) $response->getBody());
+        }
+    }
+
+    public function test_RequestResponseStrategy_ReturnJson()
+    {
+        $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::ReturnResponse')
+            ->setStrategy(new RequestResponseStrategy($this->request, $this->response));
+        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+
+        if ($route) {
+            $this->assertInstanceOf('Psr\Http\Message\ResponseInterface', $response = $route->call());
+            $this->assertEquals('test', $response->getHeaderLine('test'));
+        }
+    }
+
 }

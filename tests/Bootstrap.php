@@ -30,6 +30,34 @@ class CustomWrongStrategy
 
 }
 
+class Psr7
+{
+
+    public function RequestResponse(
+        \Psr\Http\Message\RequestInterface $request,
+        \Psr\Http\Message\ResponseInterface $response,
+        array $args
+    ) {
+        return $args["id"];
+    }
+
+    public function RequestJson(
+        \Psr\Http\Message\RequestInterface $request,
+        array $args
+    ) {
+        return ["test" => 1];
+    }
+
+    public function ReturnResponse(
+        \Psr\Http\Message\RequestInterface $request,
+        \Psr\Http\Message\ResponseInterface $response,
+        array $args
+    ) {
+        return $response->withAddedHeader('test', 'test');
+    }
+
+}
+
 class Bar {
     public function method() {
         return true;
