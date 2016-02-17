@@ -147,8 +147,10 @@ class Group
     public function setPrefix($prefix)
     {
         $prefix = "/" . ltrim($prefix, "/");
+        $routes = [];
         foreach ($this->routes as $route)
-            $route->setPattern(rtrim($prefix . $route->getPattern(), "/"));
+            $routes[] = $route->setPattern(rtrim($prefix . $route->getPattern(), "/"));
+        $this->routes = $routes;
         return $this;
     }
 
