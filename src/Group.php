@@ -47,11 +47,13 @@ class Group
      * A fast way to register a route into the group
      *
      * @param Route $route
+     * @return self
      */
 
     public function setRoute(Route $route)
     {
         $this->routes[] = $route;
+        return $this;
     }
 
     /**

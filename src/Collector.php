@@ -360,11 +360,14 @@ class Collector
     /**
      * @param string $wildcard
      * @param string $pattern
+     *
+     * @return self
      */
 
     public function setWildcard($wildcard, $pattern)
     {
         $this->wildcards[":$wildcard"] = ":$pattern";
+        return $this;
     }
     
 }
