@@ -164,16 +164,16 @@ class Collector
     /**
      * Insert a route into every http method supported but the given ones.
      *
-     * @param string[] $methods
+     * @param string $methods
      * @param string $pattern
      * @param string|array|\Closure $action
      *
      * @return Group
      */
 
-    public function except(array $methods, $pattern, $action)
+    public function except($methods, $pattern, $action)
     {
-        return $this->match(array_diff(explode(" ", self::HTTP_METHODS), $methods), $pattern, $action);
+        return $this->match(array_diff(explode(" ", self::HTTP_METHODS), (array) $methods), $pattern, $action);
     }
 
     /**
