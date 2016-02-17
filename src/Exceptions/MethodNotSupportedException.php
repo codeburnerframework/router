@@ -11,17 +11,16 @@
 namespace Codeburner\Router\Exceptions;
 
 /**
- * Exception thrown when none route is matched, but a similar
- * route is found in another http method.
+ * Exception thrown when none route is matched, but a similar route is found in another HTTP method.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
  */
 
-class MethodNotSupportedException extends BadRouteException
+class MethodNotSupportedException extends \Exception
 {
 
     public function __construct($method) {
-        parent::__construct("The HTTP method '$method' is not supported by the route collector.");
+        $this->message = "The HTTP method '$method' is not supported by the route collector.";
     }
 
 }
