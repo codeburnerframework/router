@@ -8,6 +8,7 @@
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
 An blazing fast PHP router system with amazing features and abstraction.
+
 Thank's to [Nikita Popov's](https://github.com/nikic/) for motivate me with [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
 
 ## Installation
@@ -17,7 +18,7 @@ Add `codeburner/router` to your `composer.json` file, and update or install comp
 ```json
 {
     "require": {
-        "codeburner/router": "2.*"
+        "codeburner/router": "^2.0"
     }
 }
 ```
@@ -76,7 +77,7 @@ Welcome to the fastest PHP router system docs! Before starting the usage is reco
 
 Codeburner project create packages with performance in focus, the Codeburner Router was compared with [Nikic's fast route](https://github.com/nikic/fastroute) a fast and base package for several route systems, including the [Laravel](http://laravel.com) and [SlimFramework](http://slimframework.com).
 
-The Tests reveals that Codeburner Router can be in average **70% faster** while give a full abstraction level in handling routes. More details about the benchmark including the comparisons using [blackfire](http://blackfire.io) of scripts that maps 100 routes with several arguments and execute them, will be published asap.
+The Tests reveals that Codeburner Router can be in average **70% faster** while give a full abstraction level in handling routes. More details about the benchmark including the comparisons using [blackfire](http://blackfire.io) of [scripts that maps 100 routes with several arguments and execute them](https://gist.github.com/alexrohleder96/bc302708653b68d1b053), can be found [here](https://blackfire.io/profiles/compare/b861281b-b6d4-4015-b25b-fd9399e789ba...914e81ac-0898-4633-81b1-6c9f1bbfab69/graph?settings%5Bdimension%5D=wt&settings%5Bdisplay%5D=landscape&settings%5BtabPane%5D=nodes&selected=&callname=main()).
 
 
 ### Concepts
@@ -237,7 +238,7 @@ $collector->get("/", function ($arg) {
 
 #### Container Integration
 
-If is necessary to inject dependencies on controllers, resources, or even strategies, you can tell the `call` method on `Route` objects to use a closure that receives the class name to return one instance.
+If is necessary to inject dependencies on controllers, resources, or even strategies, you can tell the `call` method on `Route` objects to use a closure that receives the class name and return one instance of these class.
 
 ```php
 $route->call(function ($class) use ($container) {
