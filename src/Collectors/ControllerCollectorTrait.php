@@ -26,7 +26,20 @@ use ReflectionParameter;
 trait ControllerCollectorTrait
 {
 
+    /**
+     * @return Parser
+     */
+
     abstract public function getParser();
+
+    /**
+     * @param string $method
+     * @param string $pattern
+     * @param callable $action
+     *
+     * @return Group
+     */
+
     abstract public function set($method, $pattern, $action);
 
     /**
@@ -128,7 +141,6 @@ trait ControllerCollectorTrait
                 $dynamic  = $this->getMethodConstraints($method);
                 $strategy = $this->getAnnotatedStrategy($method);
 
-                /** @var \Codeburner\Router\Route $route */
                 $route = $this->set($http, "$action$dynamic", [$controller->name, $method->name]);
 
                 if ($strategy !== null) {
