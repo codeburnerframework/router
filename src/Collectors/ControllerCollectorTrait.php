@@ -12,10 +12,10 @@ namespace Codeburner\Router\Collectors;
 
 use Codeburner\Router\Collector;
 use Codeburner\Router\Group;
+use Codeburner\Router\Parser;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
-use Reflector;
 
 /**
  * Methods for enable the collector to make routes from a controller.
@@ -26,7 +26,11 @@ use Reflector;
 trait ControllerCollectorTrait
 {
 
-    abstract public function getWildcards();
+    /**
+     * @var Parser $parser
+     */
+
+    protected $parser;
     abstract public function set($method, $pattern, $action);
 
     /**
@@ -201,7 +205,7 @@ trait ControllerCollectorTrait
     protected function getParamsConstraint(ReflectionMethod $method)
     {
         $params = [];
-        preg_match_all("~\@param\s(" . implode("|", array_keys($this->getWildcards())) . "|\(.+\))\s\\$([a-zA-Z0-1_]+)~i",
+        preg_match_all("~\@param\s(" . implode("|", array_keys($this->parser->getWildcards())) . "|\(.+\))\s\\$([a-zA-Z0-1_]+)~i",
             $method->getDocComment(), $types, PREG_SET_ORDER);
 
         foreach ((array) $types as $type) {

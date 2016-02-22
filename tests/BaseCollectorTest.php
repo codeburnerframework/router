@@ -303,9 +303,9 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_CustomWildcardSupport()
     {
-        $this->collector->setWildcard('test', '\d');
+        $this->collector->getParser()->setWildcard('test', '\d');
         $this->collector->get('/foo/{id:test+}', 'Foo\Bar::method');
-        $this->assertEquals("\d", $this->collector->getWildcard('test'));
+        $this->assertEquals("\d", $this->collector->getParser()->getWildcard('test'));
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/foo/123'));
         $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->matcher->match('get', '/foo/a');
@@ -345,6 +345,15 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     {
         $this->collector->get('/{name}/{method}', 'Foo\{name}::{method}');
         $this->assertTrue($this->matcher->match('get', '/bar/method')->call());
+    }
+
+    public function test_SetParserMethod()
+    {
+        $this->collector->setParser(new Foo\CustomParser);
+        $this->assertInstanceOf('Foo\CustomParser', $this->collector->getParser());
+        $this->setExpectedException('LogicException');
+        $this->collector->get('/', 'Foo\Bar::method');
+        $this->collector->setParser(new Foo\CustomParser);
     }
 
 }

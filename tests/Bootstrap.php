@@ -3,6 +3,11 @@
 namespace Foo;
 include __DIR__ . '/../vendor/autoload.php';
 
+class CustomParser extends \Codeburner\Router\Parser
+{
+
+}
+
 class CustomStrategy implements
     \Codeburner\Router\Strategies\StrategyInterface,
     \Codeburner\Router\Strategies\MatcherAwareInterface

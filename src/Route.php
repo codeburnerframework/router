@@ -598,7 +598,7 @@ class Route
         if ($initPos !== false) {
             $endPos = strpos($this->pattern, "}", $initPos);
             $newPattern = substr_replace($this->pattern, "{" . "$token:$regex" . "}", $initPos, $endPos - $initPos + 1);
-            $wildcards = $this->collector->getWildcardTokens();
+            $wildcards = $this->collector->getParser()->getWildcardTokens();
             $newPattern = str_replace(array_keys($wildcards), $wildcards, $newPattern);
             $this->setPatternWithoutReset($newPattern);
         }
