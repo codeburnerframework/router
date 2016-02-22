@@ -398,6 +398,15 @@ class Route
     }
 
     /**
+     * @return StrategyInterface|string
+     */
+
+    public function getRawStrategy()
+    {
+        return $this->strategy;
+    }
+
+    /**
      * @return Matcher
      */
 

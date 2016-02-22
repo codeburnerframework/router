@@ -45,6 +45,18 @@ class StrategyTest extends PHPUnit_Framework_TestCase
     {
         $this->collector->get('/foo/{id:int+}', 'Foo\Bar::method')->setStrategy('Foo\CustomStrategy');
         $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+        $this->assertEquals('Foo\CustomStrategy', $route->getStrategy());
+
+        if ($route) {
+            $this->assertEquals(1, $route->call());
+        }
+    }
+
+    public function test_StrategyAsObject()
+    {
+        $this->collector->get('/foo/{id:int+}', 'Foo\Bar::method')->setStrategy(new Foo\CustomStrategy);
+        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+        $this->assertInstanceOf('Foo\CustomStrategy', $route->getRawStrategy());
 
         if ($route) {
             $this->assertEquals(1, $route->call());
@@ -55,6 +67,7 @@ class StrategyTest extends PHPUnit_Framework_TestCase
     {
         $this->collector->get('/foo/{id:int+}', 'Foo\Bar::method')->setStrategy('Foo\CustomWrongStrategy');
         $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+        $this->assertEquals('Foo\CustomWrongStrategy', $route->getStrategy());
 
         if ($route) {
             $this->setExpectedException('\Codeburner\Router\Exceptions\BadRouteException');
