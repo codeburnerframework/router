@@ -3,6 +3,11 @@
 namespace Foo;
 include __DIR__ . '/../vendor/autoload.php';
 
+class CustomParser extends \Codeburner\Router\Parser
+{
+
+}
+
 class CustomStrategy implements
     \Codeburner\Router\Strategies\StrategyInterface,
     \Codeburner\Router\Strategies\MatcherAwareInterface
@@ -41,11 +46,12 @@ class Psr7
         return $args["id"];
     }
 
-    public function RequestJson(
+    public function RequestResponseException(
         \Psr\Http\Message\RequestInterface $request,
+        \Psr\Http\Message\ResponseInterface $response,
         array $args
     ) {
-        return ["test" => 1];
+        throw new \Codeburner\Router\Exceptions\Http\NotFoundException;
     }
 
     public function ReturnResponse(
@@ -54,6 +60,27 @@ class Psr7
         array $args
     ) {
         return $response->withAddedHeader('test', 'test');
+    }
+
+    public function RequestJson(
+        \Psr\Http\Message\RequestInterface $request,
+        array $args
+    ) {
+        return ["test" => 1];
+    }
+
+    public function RequestJsonException(
+        \Psr\Http\Message\RequestInterface $request,
+        array $args
+    ) {
+        throw new \Codeburner\Router\Exceptions\Http\NotFoundException;
+    }
+
+    public function RequestJsonError(
+        \Psr\Http\Message\RequestInterface $request,
+        array $args
+    ) {
+        return "string";
     }
 
 }

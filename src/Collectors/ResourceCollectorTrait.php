@@ -10,7 +10,12 @@
 
 namespace Codeburner\Router\Collectors;
 
-use Codeburner\Router\Resource;
+/**
+ * Just a fix to phpstorm parser, as it intends that Resource is
+ * a datatype of php7 and not a class in router package.
+ */
+
+use Codeburner\Router\Resource as RouteResource;
 
 /**
  * Methods for enable the collector to be resourceful and make
@@ -49,7 +54,7 @@ trait ResourceCollectorTrait
      * @param array  $options    Some options like, "as" to name the route pattern, "only" to
      *                           explicit say that only this routes will be registered, and
      *                           "except" that register all the routes except the indicates.
-     * @return Resource
+     * @return RouteResource
      */
 
     public function resource($controller, array $options = array())
@@ -57,7 +62,7 @@ trait ResourceCollectorTrait
         $name       = isset($options["prefix"]) ? $options["prefix"] : "";
         $name      .= $this->getResourceName($controller, $options);
         $actions    = $this->getResourceActions($options);
-        $resource = new Resource;
+        $resource = new RouteResource;
 
         foreach ($actions as $action => $map) {
             $resource->set($this->set($map[0], $this->getResourcePath($action, $map[1], $name, $options), [$controller, $action]));
@@ -70,12 +75,12 @@ trait ResourceCollectorTrait
      * Collect several resources at same time.
      *
      * @param array $controllers Several controller names as parameters or an array with all controller names.
-     * @return Resource
+     * @return RouteResource
      */
 
     public function resources(array $controllers)
     {
-        $resource = new Resource;
+        $resource = new RouteResource;
         foreach ($controllers as $controller)
             $resource->set($this->resource($controller));
         return $resource;

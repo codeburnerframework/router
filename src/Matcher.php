@@ -30,6 +30,12 @@ class Matcher
     protected $collector;
 
     /**
+     * @var Parser $parser
+     */
+
+    protected $parser;
+
+    /**
      * Define a basepath to all routes.
      *
      * @var string
@@ -66,11 +72,10 @@ class Matcher
     {
         $path = $this->parsePath($path);
 
-        if ($route = $this->collector->findStaticRoute($httpMethod, $path)) {
-            return $route;
-        }
+        if (($route = $this->collector->findStaticRoute($httpMethod, $path)) ||
+            ($route = $this->matchDynamicRoute($httpMethod, $path))) {
+             $route->setMatcher($this);
 
-        if ($route = $this->matchDynamicRoute($httpMethod, $path)) {
             return $route;
         }
 
@@ -90,6 +95,8 @@ class Matcher
     protected function matchDynamicRoute($httpMethod, $path)
     {
         if ($routes = $this->collector->findDynamicRoutes($httpMethod, $path)) {
+            // cache the parser reference
+            $this->parser = $this->collector->getParser();
             // chunk routes for smaller regex groups using the Sturges' Formula
             foreach (array_chunk($routes, round(1 + 3.3 * log(count($routes))), true) as $chunk) {
                 array_map([$this, "buildRoute"], $chunk);
@@ -104,7 +111,6 @@ class Matcher
                 unset($matches[0]);
 
                 $route->setParams(array_combine($route->getParams(), array_filter($matches)));
-                $route->setMatcher($this);
 
                 return $route;
             }
@@ -164,7 +170,9 @@ class Matcher
     protected function parsePlaceholders($pattern)
     {
         $params = [];
-        preg_match_all("~" . Collector::DYNAMIC_REGEX . "~x", $pattern, $matches, PREG_SET_ORDER);
+        $parser = $this->parser;
+
+        preg_match_all("~" . $parser::DYNAMIC_REGEX . "~x", $pattern, $matches, PREG_SET_ORDER);
 
         foreach ((array) $matches as $key => $match) {
             $pattern = str_replace($match[0], isset($match[2]) ? "({$match[2]})" : "([^/]+)", $pattern);
