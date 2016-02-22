@@ -1,9 +1,10 @@
 # Codeburner Router
 
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
+[![Latest Stable Version](https://poser.pugx.org/codeburner/router/v/stable)](https://packagist.org/packages/codeburner/router)
 [![Build Status](https://travis-ci.org/codeburnerframework/router.svg?branch=master)](https://travis-ci.org/codeburnerframework/router)
 [![Code Coverage](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/codeburnerframework/routing/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/codeburnerframework/routing/?branch=master)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7/big.png)](https://insight.sensiolabs.com/projects/d96c4a67-982b-4e16-a24d-7b490bf11bc7)
 
