@@ -356,4 +356,13 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
         $this->collector->setParser(new Foo\CustomParser);
     }
 
+    public function test_EnsureAssignments()
+    {
+        $this->collector->set('get', '/hello', "");
+        $route = $this->matcher->match('get', '/hello');
+
+        $this->assertEquals($this->collector, $route->getCollector());
+        $this->assertEquals($this->matcher, $route->getMatcher());
+    }
+
 }
