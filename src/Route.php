@@ -187,7 +187,7 @@ class Route
      * @return callable
      */
 
-    private function buildCallable($callable, $container)
+    private function buildCallable($callable, $container = null)
     {
         if (is_string($callable) && strpos($callable, "::")) {
             $callable = explode("::", $callable);

@@ -71,16 +71,15 @@ class Matcher
     public function match($httpMethod, $path)
     {
         $path = $this->parsePath($path);
-        $route = null;
 
-        if (!$route = $this->collector->findStaticRoute($httpMethod, $path)) {
-            if (!$route = $this->matchDynamicRoute($httpMethod, $path)) {
-                $this->matchSimilarRoute($httpMethod, $path);
-            }
+        if (($route = $this->collector->findStaticRoute($httpMethod, $path)) ||
+            ($route = $this->matchDynamicRoute($httpMethod, $path))) {
+             $route->setMatcher($this);
+
+            return $route;
         }
 
-        $route->setMatcher($this);
-        return $route;
+        $this->matchSimilarRoute($httpMethod, $path);
     }
 
     /**
