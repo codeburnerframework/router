@@ -303,9 +303,9 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_CustomWildcardSupport()
     {
-        $this->collector->getParser()->setWildcard('test', '\d');
+        $this->collector->setWildcard('test', '\d');
         $this->collector->get('/foo/{id:test+}', 'Foo\Bar::method');
-        $this->assertEquals("\d", $this->collector->getParser()->getWildcard('test'));
+        $this->assertEquals("\d", $this->collector->getWildcard('test'));
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/foo/123'));
         $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->matcher->match('get', '/foo/a');

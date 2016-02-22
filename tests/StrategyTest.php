@@ -86,6 +86,31 @@ class StrategyTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function test_RequestResponseStrategyException()
+    {
+        $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::RequestResponseException')
+            ->setStrategy(new RequestResponseStrategy($this->request, $this->response));
+        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+
+        if ($route) {
+            $this->assertInstanceOf('Psr\Http\Message\ResponseInterface', $response = $route->call());
+            $this->assertEquals("404", $response->getStatusCode());
+            $this->assertEquals("Not Found", $response->getReasonPhrase());
+        }
+    }
+
+    public function test_RequestResponseStrategy_ReturnResponse()
+    {
+        $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::ReturnResponse')
+            ->setStrategy(new RequestResponseStrategy($this->request, $this->response));
+        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+
+        if ($route) {
+            $this->assertInstanceOf('Psr\Http\Message\ResponseInterface', $response = $route->call());
+            $this->assertEquals('test', $response->getHeaderLine('test'));
+        }
+    }
+
     public function test_RequestJsonStrategy()
     {
         $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::RequestJson')
@@ -98,15 +123,27 @@ class StrategyTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    public function test_RequestResponseStrategy_ReturnJson()
+    public function test_RequestJsonStrategyException()
     {
-        $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::ReturnResponse')
-            ->setStrategy(new RequestResponseStrategy($this->request, $this->response));
+        $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::RequestJsonException')
+            ->setStrategy(new RequestJsonStrategy($this->request, $this->response));
         $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
 
         if ($route) {
             $this->assertInstanceOf('Psr\Http\Message\ResponseInterface', $response = $route->call());
-            $this->assertEquals('test', $response->getHeaderLine('test'));
+            $this->assertEquals('{"status-code":404,"reason-phrase":"Not Found"}', (string) $response->getBody());
+        }
+    }
+
+    public function test_RequestJsonStrategyError()
+    {
+        $this->collector->get('/foo/{id:int+}', 'Foo\Psr7::RequestJsonError')
+            ->setStrategy(new RequestJsonStrategy($this->request, $this->response));
+        $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/foo/123'));
+
+        if ($route) {
+            $this->setExpectedException("RuntimeException");
+            $route->call();
         }
     }
 
