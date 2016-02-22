@@ -106,7 +106,7 @@ class Resource extends Group
 
     public function member($route)
     {
-        $resource = new Resource;
+        $resource = new self;
         $resource->set($route);
         $this->nest($resource);
     }
@@ -114,13 +114,12 @@ class Resource extends Group
     /**
      * Nested routes capture the relation between a resource and another resource.
      *
-     * @param Resource $resource
+     * @param self $resource
      * @return self
      */
 
-    public function nest(Resource $resource)
+    public function nest(self $resource)
     {
-        /** @var self $resource */
         foreach ($this->routes as $route) {
             if ($route->getAction()[1] === "show") {
                 $this->set($resource->forget()->setPrefix($this->getNestedPrefix($route->getPattern()))); break;
@@ -134,14 +133,13 @@ class Resource extends Group
      * Nest resources but with only build routes with the minimal amount of information
      * to uniquely identify the resource.
      *
-     * @param Resource $resource
+     * @param self $resource
      * @return self
      */
 
-    public function shallow(Resource $resource)
+    public function shallow(self $resource)
     {
-        /** @var self $resource */
-        $newResource = new Resource;
+        $newResource = new self;
         $resource->forget();
         $routes = $resource->all();
 
