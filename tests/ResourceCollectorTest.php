@@ -2,7 +2,7 @@
 
 use Codeburner\Router\Collector;
 use Codeburner\Router\Matcher;
-use Codeburner\Router\Link;
+use Codeburner\Router\Path;
 
 class ResourceCollectorTest extends PHPUnit_Framework_TestCase
 {
@@ -134,7 +134,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
     {
         $this->collector->resource('Resource');
         $this->collector->resource('Resource', ['as' => 'fst']);
-        $link = new Link($this->collector);
+        $link = new Path($this->collector);
 
         foreach (['resource', 'fst'] as $prefix) {
             foreach ($this->actions as $action => $map) {

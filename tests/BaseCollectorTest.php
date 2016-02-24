@@ -2,7 +2,7 @@
 
 use Codeburner\Router\Collector;
 use Codeburner\Router\Matcher;
-use Codeburner\Router\Link;
+use Codeburner\Router\Path;
 
 class BaseCollectorTest extends PHPUnit_Framework_TestCase
 {
@@ -369,14 +369,14 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     public function test_NamedStaticRoutes()
     {
         $this->collector->get("/", "")->setName("test");
-        $link = new Link($this->collector);
+        $link = new Path($this->collector);
         $this->assertTrue("/" === $link->to("test"));
     }
 
     public function test_NamedDynamicRoutes()
     {
         $this->collector->get("/myresource/{myresource_id:int+}/resource/{id:int+}", "")->setName("test");
-        $link = new Link($this->collector);
+        $link = new Path($this->collector);
         $this->assertTrue("/myresource/2/resource/3" === $link->to("test", ["myresource_id" => 2, "id" => 3]));
     }
 

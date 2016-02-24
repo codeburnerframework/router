@@ -252,18 +252,18 @@ $route->call(function ($class) use ($container) {
 
 ### Names
 
-All the routes allow you to apply names to then, this names can be used to find a route in the `Collector` or to generate links with `Link`'s method `to(string name, array args = [])`. E.g.
+All the routes allow you to apply names to then, this names can be used to find a route in the `Collector` or to generate links with `Path`'s method `to(string name, array args = [])`. E.g.
 
 ```php
 // ...
-// The link class will create several links for us, just give they new object a instance of the collector.
-$link = new Codeburner\Router\Link($collector);
+// The Path class will create several links for us, just give they new object a instance of the collector.
+$path = new Codeburner\Router\Path($collector);
 // ...
 // Setting the name of route to blog.article
 $collector->get("/blog/{article:slug+}", "blog::show")->setName("blog.article");
 // ...
 // this will print an anchor tag with "/blog/my-first-article" in href.
-echo "<a href='", $link->to("blog.article", ["article" => "my-first-article"]), "'>My First Article</a>";
+echo "<a href='", $path->to("blog.article", ["article" => "my-first-article"]), "'>My First Article</a>";
 ```
 
 > **NOTE:** For best practice use the dot for delimiting namespaces in your route names, so you can group and find they names easily. The [resource](#resources-route-names) collector adopt this concept.
@@ -437,7 +437,7 @@ class PhotosResource {
 $collector->resource("PhotosResource")->only("index");
 $collector->resource("PhotosResource", ["as" => "picture"])->only("index");
 
-echo $link->to("photos.index"), "<br>", $link->to("picture.index");
+echo $path->to("photos.index"), "<br>", $path->to("picture.index");
 ```
 
 

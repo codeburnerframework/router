@@ -11,12 +11,12 @@
 namespace Codeburner\Router;
 
 /**
- * Create urls based on registered routes.
+ * Create paths based on registered routes.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
  */
 
-class Link
+class Path
 {
 
     /**
@@ -37,7 +37,7 @@ class Link
     }
 
     /**
-     * Generate a URL to a route named by $name.
+     * Generate a path to a route named by $name.
      *
      * @param string $name
      * @param array $args
