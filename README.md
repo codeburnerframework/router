@@ -47,6 +47,7 @@ $ composer require codeburner/router --save
             - [PSR7](#psr7)
         - [Default Arguments](#default-arguments)
         - [Container Integration](#container-integration)
+    - [Names](#names)
     - [Metadata](#metadata)
 - [Collector](#collector)
     - [Groups](#groups)
@@ -58,6 +59,7 @@ $ composer require codeburner/router --save
             - [Nesting Limit](#nesting-limit)
                 - [Shallow Resources](#shallow-resources)
             - [Adding More Actions](#adding-more-actions)
+        - [Resources Route Names](#resources-route-names)
         - [Translated Patterns](#translated-patterns)
     - [Controllers](#controllers)
         - [Annotated Definition](#annotated-definition)
@@ -248,6 +250,25 @@ $route->call(function ($class) use ($container) {
 ```
 
 
+### Names
+
+All the routes allow you to apply names to then, this names can be used to find a route in the `Collector` or to generate links with `Path`'s method `to(string name, array args = [])`. E.g.
+
+```php
+// ...
+// The Path class will create several links for us, just give they new object a instance of the collector.
+$path = new Codeburner\Router\Path($collector);
+// ...
+// Setting the name of route to blog.article
+$collector->get("/blog/{article:slug+}", "blog::show")->setName("blog.article");
+// ...
+// this will print an anchor tag with "/blog/my-first-article" in href.
+echo "<a href='", $path->to("blog.article", ["article" => "my-first-article"]), "'>My First Article</a>";
+```
+
+> **NOTE:** For best practice use the dot for delimiting namespaces in your route names, so you can group and find they names easily. The [resource](#resources-route-names) collector adopt this concept.
+
+
 ### Metadata
 
 Sometimes you want to delegate more information to a route, for post match filters or action execution strategies. For persist data that will not be passed to action but used in somewhere before the execution use the `setMetadata(string key, mixed value)` method.
@@ -400,6 +421,25 @@ $collector->resource("PhotosResource")->member(
     $collector->get("/preview", "PhotosResource::preview")
 );
 ```
+
+
+#### Resources Route Names
+
+All the routes in resource receive a [name](#names) that will be composed by the resource name or prefix, a dot and the action name. e.g.
+
+```php
+class PhotosResource {
+    public function index() {
+    
+    }
+}
+
+$collector->resource("PhotosResource")->only("index");
+$collector->resource("PhotosResource", ["as" => "picture"])->only("index");
+
+echo $path->to("photos.index"), "<br>", $path->to("picture.index");
+```
+
 
 #### Translated Patterns
 
