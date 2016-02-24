@@ -100,6 +100,14 @@ class Route
     protected $matcher;
 
     /**
+     * Route name, or alias.
+     *
+     * @var string $name
+     */
+
+    protected $name;
+
+    /**
      * The function used to create controllers from name.
      *
      * @var callable
@@ -416,6 +424,15 @@ class Route
     }
 
     /**
+     * @return string
+     */
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
      * Verify if a Route have already been blocked.
      *
      * @return boolean
@@ -588,6 +605,13 @@ class Route
     public function setMatcher(Matcher $matcher)
     {
         $this->matcher = $matcher;
+        return $this;
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
+        $this->collector->setRouteName($name, $this);
         return $this;
     }
 
