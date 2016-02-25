@@ -27,6 +27,14 @@ use Codeburner\Router\Resource as RouteResource;
 trait ResourceCollectorTrait
 {
 
+    /**
+     * @param string $method
+     * @param string $pattern
+     * @param string $action
+     *
+     * @return \Codeburner\Router\Group
+     */
+
     abstract public function set($method, $pattern, $action);
 
     /**
@@ -65,7 +73,14 @@ trait ResourceCollectorTrait
         $resource = new RouteResource;
 
         foreach ($actions as $action => $map) {
-            $resource->set($this->set($map[0], $this->getResourcePath($action, $map[1], $name, $options), [$controller, $action]));
+            $resource->set(
+                $this->set(
+                    $map[0],
+                    $this->getResourcePath($action, $map[1], $name, $options),
+                    [$controller, $action]
+                )
+                    ->setName("$name.$action")
+            );
         }
 
         return $resource;

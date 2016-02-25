@@ -244,4 +244,21 @@ class Group
         return $this;
     }
 
+    /**
+     * Set a name to a Route.
+     *
+     * @param string $name
+     * @return self
+     */
+
+    public function setName($name)
+    {
+        if (count($this->routes) > 1) {
+            throw new \LogicException("You cannot set the same name to several routes.");
+        }
+
+        $this->routes[0]->setName($name);
+        return $this;
+    }
+
 }

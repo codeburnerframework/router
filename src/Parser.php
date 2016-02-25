@@ -13,8 +13,7 @@ namespace Codeburner\Router;
 use Codeburner\Router\Exceptions\BadRouteException;
 
 /**
- * Representation of a group of several routes with same
- * controller and respecting the resourceful actions.
+ * All the parsing route paths logic are maintained by this class.
  *
  * @author Alex Rohleder <contato@alexrohleder.com.br>
  */

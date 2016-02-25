@@ -2,6 +2,7 @@
 
 use Codeburner\Router\Collector;
 use Codeburner\Router\Matcher;
+use Codeburner\Router\Path;
 
 class ResourceCollectorTest extends PHPUnit_Framework_TestCase
 {
@@ -127,6 +128,19 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
 
         $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('post', '/fst/1/snd/2/edit'));
+    }
+
+    public function test_RouteNames()
+    {
+        $this->collector->resource('Resource');
+        $this->collector->resource('Resource', ['as' => 'fst']);
+        $link = new Path($this->collector);
+
+        foreach (['resource', 'fst'] as $prefix) {
+            foreach ($this->actions as $action => $map) {
+                $this->assertEquals(str_replace("{name}", $prefix, $map[1]), $link->to("$prefix.$action", ["id" => "123"]));
+            }
+        }
     }
 
     private function doTestActions($actions)

@@ -54,7 +54,7 @@ class Collector
      * dimension is indexed by an http method and hold an array indexed with the patterns
      * and holding the route. ex. [METHOD => [PATTERN => ROUTE]]
      *
-     * @var array
+     * @var Route[][]
      */
 
     protected $statics  = [];
@@ -63,10 +63,16 @@ class Collector
      * The dynamic routes have parameters and are stored in a hashtable that every cell have
      * an array with route patterns as indexes and routes as values. ex. [INDEX => [PATTERN => ROUTE]]
      *
-     * @var array
+     * @var Route[][]
      */
 
     protected $dynamics = [];
+
+    /**
+     * @var Route[]
+     */
+
+    protected $named = [];
 
     /**
      * The pattern parser instance.
@@ -201,6 +207,18 @@ class Collector
     }
 
     /**
+     * @param string $name
+     * @return Route|false
+     */
+
+    public function findNamedRoute($name)
+    {
+        if (!isset($this->named[$name])) {
+               return false;
+        } else return $this->named[$name];
+    }
+
+    /**
      * @param string $method
      * @param string $pattern
      *
@@ -258,6 +276,19 @@ class Collector
         }
 
         return $method;
+    }
+
+    /**
+     * @param string $name
+     * @param Route $route
+     *
+     * @return self
+     */
+
+    public function setRouteName($name, Route $route)
+    {
+        $this->named[$name] = $route;
+        return $this;
     }
 
     /**
