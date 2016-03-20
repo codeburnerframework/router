@@ -34,7 +34,7 @@ class Group
      * @return self
      */
 
-    public function set($route)
+    public function set($route) : self
     {
         if ($route instanceof Group) {
             foreach ($route->all() as $r)
@@ -50,7 +50,7 @@ class Group
      * @return self
      */
 
-    public function setRoute(Route $route)
+    public function setRoute(Route $route) : self
     {
         $this->routes[] = $route;
         return $this;
@@ -62,7 +62,7 @@ class Group
      * @return Route[]
      */
 
-    public function all()
+    public function all() : array
     {
         return $this->routes;
     }
@@ -75,7 +75,7 @@ class Group
      * @return Route
      */
 
-    public function nth($number)
+    public function nth(int $number) : Route
     {
         return $this->routes[$number];
     }
@@ -88,7 +88,7 @@ class Group
      * @return self
      */
 
-    public function forget()
+    public function forget() : self
     {
         foreach ($this->routes as $route)
             $route->forget();
@@ -102,7 +102,7 @@ class Group
      * @return self
      */
 
-    public function setMethod($method)
+    public function setMethod(string $method)
     {
         foreach ($this->routes as $route)
             $route->setMethod($method);
@@ -112,11 +112,11 @@ class Group
     /**
      * Set one action to all grouped routes.
      *
-     * @param string $action
+     * @param callable $action
      * @return self
      */
 
-    public function setAction($action)
+    public function setAction($action) : self
     {
         foreach ($this->routes as $route)
             $route->setAction($action);
@@ -130,7 +130,7 @@ class Group
      * @return self
      */
 
-    public function setNamespace($namespace)
+    public function setNamespace(string $namespace) : self
     {
         foreach ($this->routes as $route)
             $route->setNamespace($namespace);
@@ -144,7 +144,7 @@ class Group
      * @return self
      */
 
-    public function setPrefix($prefix)
+    public function setPrefix(string $prefix) : self
     {
         $prefix = "/" . ltrim($prefix, "/");
         $routes = [];
@@ -160,10 +160,10 @@ class Group
      * @param string $key
      * @param string $value
      *
-     * @return $this
+     * @return self
      */
 
-    public function setMetadata($key, $value)
+    public function setMetadata(string $key, $value) : self
     {
         foreach ($this->routes as $route)
             $route->setMetadata($key, $value);
@@ -174,10 +174,10 @@ class Group
      * Set a bunch of metadata to all grouped routes.
      *
      * @param mixed[] $metadata
-     * @return $this
+     * @return self
      */
 
-    public function setMetadataArray(array $metadata)
+    public function setMetadataArray(array $metadata) : self
     {
         foreach ($this->routes as $route)
             $route->setMetadataArray($metadata);
@@ -188,10 +188,10 @@ class Group
      * Set default parameters to all grouped routes.
      *
      * @param mixed[] $defaults
-     * @return $this
+     * @return self
      */
 
-    public function setDefaults(array $defaults)
+    public function setDefaults(array $defaults) : self
     {
         foreach ($this->routes as $route)
             $route->setDefaults($defaults);
@@ -204,10 +204,10 @@ class Group
      * @param string $key
      * @param mixed $value
      *
-     * @return $this
+     * @return self
      */
 
-    public function setDefault($key, $value)
+    public function setDefault(string $key, $value) : self
     {
         foreach ($this->routes as $route)
             $route->setDefault($key, $value);
@@ -221,7 +221,7 @@ class Group
      * @return self
      */
 
-    public function setStrategy($strategy)
+    public function setStrategy($strategy) : self
     {
         foreach ($this->routes as $route)
             $route->setStrategy($strategy);
@@ -237,7 +237,7 @@ class Group
      * @return self
      */
 
-    public function setConstraint($name, $regex)
+    public function setConstraint(string $name, string $regex) : self
     {
         foreach ($this->routes as $route)
             $route->setConstraint($name, $regex);
@@ -251,7 +251,7 @@ class Group
      * @return self
      */
 
-    public function setName($name)
+    public function setName(string $name) : self
     {
         if (count($this->routes) > 1) {
             throw new \LogicException("You cannot set the same name to several routes.");

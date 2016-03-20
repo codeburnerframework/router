@@ -45,7 +45,7 @@ class MethodNotAllowedException extends HttpExceptionAbstract
      * @param string[] $allowedMethods
      */
 
-    public function __construct($requestedMethod, $requestedUri, array $allowedMethods)
+    public function __construct(string $requestedMethod, string $requestedUri, array $allowedMethods)
     {
         $this->requestedMethod = $requestedMethod;
         $this->requestedUri = $requestedUri;
@@ -61,7 +61,7 @@ class MethodNotAllowedException extends HttpExceptionAbstract
      * @return bool
      */
 
-    public function can($method)
+    public function can(string $method) : bool
     {
         return in_array(strtolower($method), $this->allowedMethods);
     }
@@ -74,7 +74,7 @@ class MethodNotAllowedException extends HttpExceptionAbstract
      * @return string
      */
 
-    public function allowed()
+    public function allowed() : string
     {
         return implode(', ', $this->allowedMethods);
     }

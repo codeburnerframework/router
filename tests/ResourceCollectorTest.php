@@ -80,7 +80,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
     public function test_OnlyMethod()
     {
         $actions = ['index', 'show'];
-        $this->collector->resource('Resource', ['as' => 'test'])->only($actions);
+        $this->collector->resource('Resource', ['as' => 'test'])->only(...$actions);
         $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->doTestActions($actions);
     }
@@ -88,7 +88,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
     public function test_ExceptMethod()
     {
         $actions = ['index', 'show'];
-        $this->collector->resource('Resource', ['as' => 'test'])->except($actions);
+        $this->collector->resource('Resource', ['as' => 'test'])->except(...$actions);
         $this->setExpectedException('Codeburner\Router\Exceptions\Http\MethodNotAllowedException');
         $this->doTestActions(array_diff(array_keys($this->actions), $actions));
     }

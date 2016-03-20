@@ -31,7 +31,7 @@ class RequestResponseStrategy implements StrategyInterface
      * @return ResponseInterface
      */
 
-    public function call(Route $route)
+    public function call(Route $route) : ResponseInterface
     {
         try {
             $response = call_user_func($route->getAction(), $this->request, $this->response, $route->getMergedParams());

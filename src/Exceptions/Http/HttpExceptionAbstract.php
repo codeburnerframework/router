@@ -22,12 +22,12 @@ use Psr\Http\Message\ResponseInterface;
 abstract class HttpExceptionAbstract extends Exception
 {
 
-    public function getResponse(ResponseInterface $response)
+    public function getResponse(ResponseInterface $response) : ResponseInterface
     {
         return $response->withStatus($this->code, $this->message);
     }
 
-    public function getJsonResponse(ResponseInterface $response)
+    public function getJsonResponse(ResponseInterface $response) : ResponseInterface
     {
         $response->withAddedHeader("content-type", "application/json");
 

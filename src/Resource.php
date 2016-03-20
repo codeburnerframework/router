@@ -25,7 +25,7 @@ class Resource extends Group
      * @throws \BadMethodCallException
      */
 
-    public function setMethod($method)
+    public function setMethod(string $method)
     {
         throw new \BadMethodCallException("Resources can't chance they http method.");
     }
@@ -33,26 +33,26 @@ class Resource extends Group
     /**
      * Remove the routes without the passed methods.
      *
-     * @param string|string[] $methods
+     * @param string ...$methods
      * @return self
      */
 
-    public function only($methods)
+    public function only(string ...$methods) : self
     {
-        $this->filterByMethod((array) $methods, false);
+        $this->filterByMethod($methods, false);
         return $this;
     }
 
     /**
      * Remove the routes with the passed methods.
      *
-     * @param string|string[] $methods
+     * @param string ...$methods
      * @return self
      */
 
-    public function except($methods)
+    public function except(string ...$methods) : self
     {
-        $this->filterByMethod((array) $methods, true);
+        $this->filterByMethod($methods, true);
         return $this;
     }
 
@@ -63,7 +63,7 @@ class Resource extends Group
      * @param bool $alt Should remove?
      */
 
-    private function filterByMethod(array $methods, $alt)
+    private function filterByMethod(array $methods, bool $alt)
     {
         $methods = array_flip(array_map('strtolower', $methods));
 
@@ -81,7 +81,7 @@ class Resource extends Group
      * @return self
      */
 
-    public function translate(array $translations)
+    public function translate(array $translations) : self
     {
         foreach ($this->routes as $route) {
             $action = $route->getAction()[1];
@@ -104,22 +104,29 @@ class Resource extends Group
      * @return self
      */
 
-    public function member($route)
+    public function member($route) : self
     {
         $resource = new self;
+
         $resource->set($route);
         $this->nest($resource);
+
+        return $this;
     }
 
     /**
      * Nested routes capture the relation between a resource and another resource.
      *
-     * @param self $resource
+     * @param self|string $resource
      * @return self
      */
 
-    public function nest(self $resource)
+    public function nest($resource) : self
     {
+        if (!$resource instanceof self) {
+             $resource = new $resource;
+        }
+
         foreach ($this->routes as $route) {
             if ($route->getAction()[1] === "show") {
                 $this->set($resource->forget()->setPrefix($this->getNestedPrefix($route->getPattern()))); break;
@@ -133,12 +140,16 @@ class Resource extends Group
      * Nest resources but with only build routes with the minimal amount of information
      * to uniquely identify the resource.
      *
-     * @param self $resource
+     * @param self|string $resource
      * @return self
      */
 
-    public function shallow(self $resource)
+    public function shallow($resource) : self
     {
+        if (!$resource instanceof self) {
+             $resource = new $resource;
+        }
+
         $newResource = new self;
         $resource->forget();
         $routes = $resource->all();
@@ -160,7 +171,7 @@ class Resource extends Group
      * @return string
      */
 
-    protected function getNestedPrefix($pattern)
+    protected function getNestedPrefix(string $pattern) : string
     {
         $segments = explode("/", $pattern);
         $pattern = "";

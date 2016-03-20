@@ -10,8 +10,7 @@
 
 namespace Codeburner\Router;
 
-use Codeburner\Router\Exceptions\Http\MethodNotAllowedException;
-use Codeburner\Router\Exceptions\Http\NotFoundException;
+use Codeburner\Router\Exceptions\Http\{MethodNotAllowedException, NotFoundException};
 use Exception;
 
 /**
@@ -50,7 +49,7 @@ class Matcher
      * @param string $basepath Define a Path prefix that must be excluded on matches.
      */
 
-    public function __construct(Collector $collector, $basepath = "")
+    public function __construct(Collector $collector, string $basepath = "")
     {
         $this->collector = $collector;
         $this->basepath  = $basepath;
@@ -68,7 +67,7 @@ class Matcher
      * @return Route
      */
 
-    public function match($httpMethod, $path)
+    public function match(string $httpMethod, string $path) : Route
     {
         $path = $this->parsePath($path);
 
@@ -92,7 +91,7 @@ class Matcher
      *                     be returned otherwise a false will.
      */
 
-    protected function matchDynamicRoute($httpMethod, $path)
+    protected function matchDynamicRoute(string $httpMethod, string $path)
     {
         if ($routes = $this->collector->findDynamicRoutes($httpMethod, $path)) {
             // cache the parser reference
@@ -127,7 +126,7 @@ class Matcher
      * @return Route
      */
 
-    protected function buildRoute(Route $route)
+    protected function buildRoute(Route $route) : Route
     {
         if ($route->getBlock()) {
             return $route;
@@ -145,7 +144,7 @@ class Matcher
      * @return array
      */
 
-    protected function buildGroup(array $routes)
+    protected function buildGroup(array $routes) : array
     {
         $groupCount = (int) $map = $regex = [];
 
@@ -167,7 +166,7 @@ class Matcher
      * @return array 0 => new route regex, 1 => map of parameter names
      */
 
-    protected function parsePlaceholders($pattern)
+    protected function parsePlaceholders(string $pattern) : array
     {
         $params = [];
         $parser = $this->parser;
@@ -191,7 +190,7 @@ class Matcher
      * @return string
      */
 
-    protected function parsePath($path)
+    protected function parsePath(string $path) : string
     {
         $path = parse_url(substr(strstr(";" . $path, ";" . $this->basepath), strlen(";" . $this->basepath)), PHP_URL_PATH);
 
@@ -212,7 +211,7 @@ class Matcher
      * @throws MethodNotAllowedException
      */
 
-    protected function matchSimilarRoute($httpMethod, $path)
+    protected function matchSimilarRoute(string $httpMethod, string $path)
     {
         $dm = [];
 
@@ -233,7 +232,7 @@ class Matcher
      * @return array
      */
 
-    protected function checkStaticRouteInOtherMethods($targetHttpMethod, $path)
+    protected function checkStaticRouteInOtherMethods(string $targetHttpMethod, string $path) : array
     {
         return array_filter($this->getHttpMethodsBut($targetHttpMethod), function ($httpMethod) use ($path) {
             return (bool) $this->collector->findStaticRoute($httpMethod, $path);
@@ -249,7 +248,7 @@ class Matcher
      * @return array
      */
 
-    protected function checkDynamicRouteInOtherMethods($targetHttpMethod, $path)
+    protected function checkDynamicRouteInOtherMethods(string $targetHttpMethod, string $path) : array
     {
         return array_filter($this->getHttpMethodsBut($targetHttpMethod), function ($httpMethod) use ($path) {
             return (bool) $this->matchDynamicRoute($httpMethod, $path);
@@ -259,20 +258,20 @@ class Matcher
     /**
      * Strip the given http methods and return all the others.
      *
-     * @param string|string[]
+     * @param string
      * @return array
      */
 
-    protected function getHttpMethodsBut($targetHttpMethod)
+    protected function getHttpMethodsBut(string $targetHttpMethod) : array
     {
-        return array_diff(explode(" ", Collector::HTTP_METHODS), (array) $targetHttpMethod);
+        return array_diff(explode(" ", Collector::HTTP_METHODS), [$targetHttpMethod]);
     }
 
     /**
      * @return Collector
      */
 
-    public function getCollector()
+    public function getCollector() : Collector
     {
         return $this->collector;
     }
@@ -281,7 +280,7 @@ class Matcher
      * @return string
      */
 
-    public function getBasePath()
+    public function getBasePath() : string
     {
         return $this->basepath;
     }
@@ -291,11 +290,13 @@ class Matcher
      * every requested Path.
      *
      * @param string $basepath The new basepath
+     * @return self
      */
     
-    public function setBasePath($basepath)
+    public function setBasePath(string $basepath) : self
     {
         $this->basepath = $basepath;
+        return $this;
     }
 
 }

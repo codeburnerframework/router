@@ -46,7 +46,7 @@ class Path
      * @return string
      */
 
-    public function to($name, array $args = [])
+    public function to(string $name, array $args = []) : string
     {
         $route = $this->collector->findNamedRoute($name);
         $parser = $this->collector->getParser();

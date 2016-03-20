@@ -10,8 +10,7 @@
 
 namespace Codeburner\Router\Strategies;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\{RequestInterface, ResponseInterface};
 
 /**
  * Trait RequestAwareTrait
@@ -51,7 +50,7 @@ trait RequestAwareTrait
      * @return RequestInterface
      */
 
-    public function getRequest()
+    public function getRequest() : RequestInterface
     {
         return $this->request;
     }
@@ -61,7 +60,7 @@ trait RequestAwareTrait
      * @return self
      */
 
-    public function setRequest(RequestInterface $request)
+    public function setRequest(RequestInterface $request) : self
     {
         $this->request = $request;
         return $this;
@@ -71,7 +70,7 @@ trait RequestAwareTrait
      * @return ResponseInterface
      */
 
-    public function getResponse()
+    public function getResponse() : ResponseInterface
     {
         return $this->response;
     }
@@ -81,7 +80,7 @@ trait RequestAwareTrait
      * @return self
      */
 
-    public function setResponse(ResponseInterface $response)
+    public function setResponse(ResponseInterface $response) : self
     {
         $this->response = $response;
         return $this;

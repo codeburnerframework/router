@@ -58,7 +58,7 @@ class Parser
      * @return array
      */
 
-    public function parsePattern($pattern)
+    public function parsePattern(string $pattern) : array
     {
         $withoutClosing = rtrim($pattern, "]");
         $closingNumber  = strlen($pattern) - strlen($withoutClosing);
@@ -79,7 +79,7 @@ class Parser
      * @throws BadRouteException
      */
 
-    protected function parseSegments(array $segments, $closingNumber, $withoutClosing)
+    protected function parseSegments(array $segments, int $closingNumber, string $withoutClosing)
     {
         if ($closingNumber !== count($segments) - 1) {
             if (preg_match("~" . self::DYNAMIC_REGEX . "(*SKIP)(*F)|\]~x", $withoutClosing)) {
@@ -95,7 +95,7 @@ class Parser
      * @return array
      */
 
-    protected function buildSegments(array $segments)
+    protected function buildSegments(array $segments) : array
     {
         $pattern  = "";
         $patterns = [];
@@ -117,7 +117,7 @@ class Parser
      * @return string[]
      */
 
-    public function getWildcards()
+    public function getWildcards() : array
     {
         $wildcards = [];
         foreach ($this->wildcards as $token => $regex)
@@ -129,7 +129,7 @@ class Parser
      * @return string[]
      */
 
-    public function getWildcardTokens()
+    public function getWildcardTokens() : array
     {
         return $this->wildcards;
     }
@@ -139,7 +139,7 @@ class Parser
      * @return string|null
      */
 
-    public function getWildcard($wildcard)
+    public function getWildcard(string $wildcard)
     {
         return isset($this->wildcards[":$wildcard"]) ? substr($this->wildcards[":$wildcard"], 1) : null;
     }
@@ -151,7 +151,7 @@ class Parser
      * @return self
      */
 
-    public function setWildcard($wildcard, $pattern)
+    public function setWildcard(string $wildcard, string $pattern) : self
     {
         $this->wildcards[":$wildcard"] = ":$pattern";
         return $this;

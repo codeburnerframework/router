@@ -11,8 +11,7 @@
 namespace Codeburner\Router;
 
 use Codeburner\Router\Exceptions\BadRouteException;
-use Codeburner\Router\Strategies\MatcherAwareInterface;
-use Codeburner\Router\Strategies\StrategyInterface;
+use Codeburner\Router\Strategies\{MatcherAwareInterface, StrategyInterface};
 
 /**
  * Route representation, a route must be able to chang and execute itself.
@@ -122,7 +121,7 @@ class Route
      * @param callable $action
      */
 
-    public function __construct(Collector $collector, $method, $pattern, $action)
+    public function __construct(Collector $collector, string $method, string $pattern, $action)
     {
         $this->collector = $collector;
         $this->method    = $method;
@@ -136,7 +135,7 @@ class Route
      * @return Route
      */
 
-    public function reset()
+    public function reset() : Route
     {
         return $this->collector->set($this->method, $this->pattern, $this->action)->nth(0)
                                ->setStrategy($this->strategy)->setParams($this->params)
@@ -149,7 +148,7 @@ class Route
      * @return self
      */
 
-    public function forget()
+    public function forget() : self
     {
         $this->collector->forget($this->method, $this->pattern);
         return $this;
@@ -221,7 +220,7 @@ class Route
      * @return Object
      */
 
-    private function parseCallableController($controller, $container)
+    private function parseCallableController(string $controller, $container)
     {
         $controller  = rtrim($this->namespace, "\\") . "\\" . $this->parseCallablePlaceholders($controller);
 
@@ -237,7 +236,7 @@ class Route
      * @return string
      */
 
-    private function parseCallablePlaceholders($fragment)
+    private function parseCallablePlaceholders(string $fragment) : string
     {
         if (strpos($fragment, "{") !== false) {
             foreach ($this->params as $placeholder => $value) {
@@ -274,7 +273,7 @@ class Route
      * @return Collector
      */
 
-    public function getCollector()
+    public function getCollector() : Collector
     {
         return $this->collector;
     }
@@ -283,7 +282,7 @@ class Route
      * @return string
      */
 
-    public function getMethod()
+    public function getMethod() : string
     {
         return $this->method;
     }
@@ -292,7 +291,7 @@ class Route
      * @return string
      */
 
-    public function getPattern()
+    public function getPattern() : string
     {
         return $this->pattern;
     }
@@ -301,7 +300,7 @@ class Route
      * @return string[]
      */
 
-    public function getSegments()
+    public function getSegments() : array
     {
         return explode("/", $this->pattern);
     }
@@ -319,7 +318,7 @@ class Route
      * @return string
      */
 
-    public function getNamespace()
+    public function getNamespace() : string
     {
         return $this->namespace;
     }
@@ -328,19 +327,9 @@ class Route
      * @return string[]
      */
 
-    public function getParams()
+    public function getParam(string $key = "")
     {
-        return $this->params;
-    }
-
-    /**
-     * @param string $key
-     * @return string
-     */
-
-    public function getParam($key)
-    {
-        return $this->params[$key];
+        return $key ? (isset($this->params[$key]) ? $this->params[$key] : null) : $this->params;
     }
 
     /**
@@ -349,7 +338,7 @@ class Route
      * @return array
      */
 
-    public function getMergedParams()
+    public function getMergedParams() : array
     {
         return array_merge($this->defaults, $this->params);
     }
@@ -358,9 +347,9 @@ class Route
      * @return array
      */
 
-    public function getDefaults()
+    public function getDefault(string $key = "")
     {
-        return $this->defaults;
+        return $key ? (isset($this->defaults[$key]) ? $this->defaults[$key] : null) : $this->defaults;
     }
 
     /**
@@ -368,41 +357,22 @@ class Route
      * @return mixed
      */
 
-    public function getDefault($key)
+    public function getMetadata(string $key = "")
     {
-        return $this->defaults[$key];
+        return $key ? (isset($this->metadata[$key]) ? $this->metadata[$key] : null) : $this->metadata;
     }
 
     /**
-     * @return array
+     * @return string
      */
 
-    public function getMetadataArray()
-    {
-        return $this->metadata;
-    }
-
-    /**
-     * @param string $key
-     * @return mixed
-     */
-
-    public function getMetadata($key)
-    {
-        return $this->metadata[$key];
-    }
-
-    /**
-     * @return string|null
-     */
-
-    public function getStrategy()
+    public function getStrategy() : string
     {
         if ($this->strategy instanceof StrategyInterface) {
             return get_class($this->strategy);
         }
 
-        return $this->strategy;
+        return (string) $this->strategy;
     }
 
     /**
@@ -418,7 +388,7 @@ class Route
      * @return Matcher
      */
 
-    public function getMatcher()
+    public function getMatcher() : Matcher
     {
         return $this->matcher;
     }
@@ -427,7 +397,7 @@ class Route
      * @return string
      */
 
-    public function getName()
+    public function getName() : string
     {
         return $this->name;
     }
@@ -438,7 +408,7 @@ class Route
      * @return boolean
      */
 
-    public function getBlock()
+    public function getBlock() : bool
     {
         return $this->blocked;
     }
@@ -451,7 +421,7 @@ class Route
      * @return self
      */
 
-    public function setBlock($blocked)
+    public function setBlock(bool $blocked) : self
     {
         $this->blocked = $blocked;
         return $this;
@@ -462,7 +432,7 @@ class Route
      * @return Route
      */
 
-    public function setMethod($method)
+    public function setMethod(string $method) : Route
     {
         $this->forget();
         $this->method = $method;
@@ -474,7 +444,7 @@ class Route
      * @return Route
      */
 
-    public function setPattern($pattern)
+    public function setPattern(string $pattern) : Route
     {
         $this->forget();
         $this->pattern = $pattern;
@@ -486,18 +456,18 @@ class Route
      * @return self
      */
 
-    public function setPatternWithoutReset($pattern)
+    public function setPatternWithoutReset(string $pattern) : self
     {
         $this->pattern = $pattern;
         return $this;
     }
 
     /**
-     * @param string $action
+     * @param callable $action
      * @return self
      */
 
-    public function setAction($action)
+    public function setAction($action) : self
     {
         $this->action = $action;
         return $this;
@@ -508,7 +478,7 @@ class Route
      * @return self
      */
 
-    public function setNamespace($namespace)
+    public function setNamespace(string $namespace) : self
     {
         $this->namespace = $namespace;
         return $this;
@@ -519,7 +489,7 @@ class Route
      * @return self
      */
 
-    public function setParams(array $params)
+    public function setParams(array $params) : self
     {
         $this->params = $params;
         return $this;
@@ -532,7 +502,7 @@ class Route
      * @return self
      */
 
-    public function setParam($key, $value)
+    public function setParam(string $key, string $value) : self
     {
         $this->params[$key] = $value;
         return $this;
@@ -543,7 +513,7 @@ class Route
      * @return self
      */
 
-    public function setDefaults(array $defaults)
+    public function setDefaults(array $defaults) : self
     {
         $this->defaults = $defaults;
         return $this;
@@ -556,7 +526,7 @@ class Route
      * @return self
      */
 
-    public function setDefault($key, $value)
+    public function setDefault(string $key, $value) : self
     {
         $this->defaults[$key] = $value;
         return $this;
@@ -567,7 +537,7 @@ class Route
      * @return self
      */
 
-    public function setMetadataArray(array $metadata)
+    public function setMetadataArray(array $metadata) : self
     {
         $this->metadata = $metadata;
         return $this;
@@ -577,10 +547,10 @@ class Route
      * @param string $key
      * @param mixed $value
      *
-     * @return $this
+     * @return self
      */
 
-    public function setMetadata($key, $value)
+    public function setMetadata(string $key, $value) : self
     {
         $this->metadata[$key] = $value;
         return $this;
@@ -591,7 +561,7 @@ class Route
      * @return self
      */
 
-    public function setStrategy($strategy)
+    public function setStrategy($strategy) : self
     {
         $this->strategy = $strategy;
         return $this;
@@ -602,13 +572,18 @@ class Route
      * @return self
      */
 
-    public function setMatcher(Matcher $matcher)
+    public function setMatcher(Matcher $matcher) : self
     {
         $this->matcher = $matcher;
         return $this;
     }
 
-    public function setName($name)
+    /**
+     * @param string $name
+     * @return self
+     */
+
+    public function setName(string $name) : self
     {
         $this->name = $name;
         $this->collector->setRouteName($name, $this);
@@ -624,7 +599,7 @@ class Route
      * @return self
      */
 
-    public function setConstraint($token, $regex)
+    public function setConstraint(string $token, string $regex) : self
     {
         $initPos = strpos($this->pattern, "{" . $token);
 
@@ -644,7 +619,7 @@ class Route
      * @return bool
      */
 
-    public function hasParam($key)
+    public function hasParam(string $key) : bool
     {
         return isset($this->params[$key]);
     }
@@ -654,7 +629,7 @@ class Route
      * @return bool
      */
 
-    public function hasDefault($key)
+    public function hasDefault(string $key) : bool
     {
         return isset($this->defaults[$key]);
     }
@@ -664,7 +639,7 @@ class Route
      * @return bool
      */
 
-    public function hasMetadata($key)
+    public function hasMetadata(string $key) : bool
     {
         return isset($this->metadata[$key]);
     }

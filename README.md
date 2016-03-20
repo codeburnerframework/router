@@ -204,28 +204,22 @@ To create one enhancer you only need to extends the `Codeburner\Router\Strategie
 Codeburner have support to [psr7 objects](http://www.php-fig.org/psr/psr-7/), there are at this version two strategies that give your actions a `request` and `response` objects and handle generated `response` objects. Both `Codeburner\Router\Strategies\RequestResponseStrategy` and `Codeburner\Router\Strategies\RequestJsonStrategy` receive one `Psr\Http\Message\RequestInterface` and one `Psr\Http\Message\ResponseInterface`, and make the `matcher`'s `call` method return a `Psr\Http\Message\ResponseInterface`.
 
 ```php
-$collector->get("/article/{id:int{5}}", function (RequestInterface $request, ResponseInterface $response, array $args) {
-    return (string) getCommentById($args["id"]);
-})->setStrategy(new RequestResponseStrategy($request, $response));
-```
+use Psr\Http\Message\{RequestInterface as Request, ResponseInterface as Response};
+use Codeburner\Router\Strategies\{RequestResponseStrategy, RequestJsonStrategy};
 
-```php
-$collector->get("/article/{id:int{5}}", function (RequestInterface $request, array $args) {
-    return (array) getCommentById($args["id"]);
-})->setStrategy(new RequestJsonStrategy($request, $response));
-```
-
-Instead of creating strategy objects by yourself, you could use a [container wrapper](#container-integration) on `call` method.
-
-```php
-$route = $collector->get("/{id:int{5}}", function (RequestInterface $request, ResponseInterface $response, array $args) {
-    return $args["id"];
+$r1 = $collector->get('/article/{id}', function (Request $request, Response $response, array $args) {
+    return getArticleById($args['id']);
 });
 
-$route->call(function ($class) use ($container) {
-    return $container->get($class);
+$r2 = $collector->get("/article/{id}", function (Request $request, array $args) {
+    return (array) getArticleById($args['id']);
 });
+
+$r1->setStrategy(new RequestResponseStrategy($request, $response));
+$r2->setStrategy(new RequestJsonStrategy($request, $response));
 ```
+
+> **TIP:** Instead of creating strategy objects by yourself, you could use a [container wrapper](#container-integration) on `call` method.
 
 
 #### Default Arguments
@@ -273,7 +267,7 @@ echo "<a href='", $path->to("blog.article", ["article" => "my-first-article"]), 
 
 Sometimes you want to delegate more information to a route, for post match filters or action execution strategies. For persist data that will not be passed to action but used in somewhere before the execution use the `setMetadata(string key, mixed value)` method.
 
-For getting the metadata use the `Codeburner\Router\Route`'s `getMetadataArray()` method for getting all of each, and `getMetadata(string key)` to get a specific metadata, you can check if a metadata exists with `hasMetadata(string key)` method.
+For getting the metadata use the `Codeburner\Router\Route`'s `getMetadata(string key = "")` method without the key parameter for getting all of each, or passing the key parameter to get a specific metadata, you can check if a metadata exists with `hasMetadata(string key)` method.
 
 
 ## Collector
@@ -291,7 +285,7 @@ All routes returned by the collector are `Codeburner\Router\Group` instances, ev
 Resource routing allows you to quickly declare all of the common routes for a given resourceful controller. Instead of declaring separate routes for your index, show, make, edit, create, update and destroy actions, a resourceful route declares them in a single line of code.
 
 ```php
-$collector->resource('PhotosResource');
+$collector->resource(PhotosResource::class);
 ```
 
 The collector will create seven new routes for `PhotosResource`, as listed bellow:
@@ -311,40 +305,31 @@ DELETE   | /photos/{id}      | PhotosResource::destroy   | Delete a specific pho
 
 #### Restricting Actions
 
-There is two ways to define what of the seven resource routes should be created, with the `only` or `except` as option in `resource(string resource, array options = null)` method, 
+There is two ways to define what of the seven resource routes should be created, with the `only` and `except` methods of `Codeburner\Router\Resource` object returned by the `resource(string ...resource)` method.
 
 ```php
-// create only the index and show routes.
-$collector->resource("ArticleResource", ["only" => ["index", "show"]]);
-
-// create only the index and show routes too, because all the others should not be created.
-$collector->resource("ArticleResource", ["except" => ["make", "create", "destroy", "update", "edit"]]);
+$collector->resource(ArticleResource::class)->only("index", "show");
 ```
-
-or with the `only` and `except` methods of `Codeburner\Router\Resource` object returned by the `resource(string resource, array options = null)` method.
 
 ```php
-// create only the index and show routes.
-$collector->resource("ArticleResource")->only(["index", "show"]);
-
-// create only the index and show routes too, because all the others should not be created.
-$collector->resource("ArticleResource")->except["make", "create", "destroy", "update", "edit"]);
+$collector->resource(ArticleResource::class)->except("make", "create", "destroy", "update", "edit");
 ```
 
+> **NOTE:** You can use the [variadic functions](http://php.net/manual/pt_BR/functions.arguments.php#functions.variable-arg-list) to pass an array to `only` and `except` methods.
 
 #### Prefixing Resources
 
-By default all resource patterns receive the resource name as prefix, on previous example the `UserResource` generate a `/user` prefix. To alter this pass an array with `as` option to the `resource(string resource, array option = null)` method, these option will be used as prefix. eg.
+By default all resource patterns receive the resource name as prefix, on previous example the `UserResource` generate a `/user` prefix. To alter this use the `as` method, these option will be used as prefix. eg.
 
 ```php
 // now the pattern for make action will be /account/make
-$collector->resource("UserResource", ["as" => "account"]);
+$collector->resource(UserResource::class)->as("account");
 ```
 
 
 ##### Ignoring Resource Name
 
-You can avoid this by using the `resourceWithoutPrefix(string resource)` instead of `resource(string resource, array option = null)` method, the same way for multiple matching methods `resources(string[] resource)` and `resourcesWithoutPrefix(string[] resources)`.
+You can avoid this by using the `resourceWithoutPrefix(string ...resource)` instead of `resource(string ...resource)` method.
 
 
 #### Nested Resources
@@ -352,8 +337,8 @@ You can avoid this by using the `resourceWithoutPrefix(string resource)` instead
 It's common to have resources that are logically children of other resources. For example one `article` always have one `category`. Nested routes allow you to capture this relationship in your routing. In this case, you could include this route declaration:
 
 ```php
-$collector->resource("CategoryResource")->nest(
-    $collector->resource("ArticleResource")
+$collector->resource(CategoryResource::class)->nest(
+    $collector->resource(ArticleResource::class)
 );
 ```
 

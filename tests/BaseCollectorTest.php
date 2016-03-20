@@ -49,7 +49,7 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_OptionalSegments()
     {
-        $this->collector->set('get', '/hello[/world]', "");
+        $this->collector->set('get', '/hello[/world]', 'Foo\Bar::method');
         $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/hello'));
         $this->assertInstanceOf('Codeburner\Router\Route', $route = $this->matcher->match('get', '/hello/world'));
     }
@@ -57,19 +57,19 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     public function test_OptionalSegmentsOnMiddle()
     {
         $this->setExpectedException('Codeburner\Router\Exceptions\BadRouteException');
-        $this->collector->set('get', '/hello[/world]/wrong', "");
+        $this->collector->set('get', '/hello[/world]/wrong', 'Foo\Bar::method');
     }
 
     public function test_UnclosedOptionalSegment()
     {
         $this->setExpectedException('Codeburner\Router\Exceptions\BadRouteException');
-        $this->collector->set('get', '/hello[/world', "");
+        $this->collector->set('get', '/hello[/world', 'Foo\Bar::method');
     }
 
     public function test_EmptyOptionalSegments()
     {
         $this->setExpectedException('Codeburner\Router\Exceptions\BadRouteException');
-        $this->collector->set('get', '/hello[]', "");
+        $this->collector->set('get', '/hello[]', 'Foo\Bar::method');
     }
 
     public function test_Matcher_DynamicRoute_ActionParameters()
@@ -124,11 +124,11 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     public function test_MethodNotAllowedExceptionMethods()
     {
         try {
-            $this->collector->get("/", "");
-            $this->matcher->match("post", "/");
+            $this->collector->get('/', 'Foo\Bar::method');
+            $this->matcher->match('post', '/');
         } catch (\Codeburner\Router\Exceptions\Http\MethodNotAllowedException $e) {
-            $this->assertTrue($e->can("get"));
-            $this->assertEquals("get", $e->allowed());
+            $this->assertTrue($e->can('get'));
+            $this->assertEquals('get', $e->allowed());
         }
     }
 
@@ -304,9 +304,9 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_CustomWildcardSupport()
     {
-        $this->collector->setWildcard('test', '\d');
+        $this->collector->getParser()->setWildcard('test', '\d');
         $this->collector->get('/foo/{id:test+}', 'Foo\Bar::method');
-        $this->assertEquals("\d", $this->collector->getWildcard('test'));
+        $this->assertEquals("\d", $this->collector->getParser()->getWildcard('test'));
         $this->assertInstanceOf('Codeburner\Router\Route', $this->matcher->match('get', '/foo/123'));
         $this->setExpectedException('Codeburner\Router\Exceptions\Http\NotFoundException');
         $this->matcher->match('get', '/foo/a');
