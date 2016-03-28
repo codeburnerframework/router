@@ -11,7 +11,6 @@
 namespace Codeburner\Router;
 
 use Codeburner\Router\Exceptions\{BadRouteException, MethodNotSupportedException};
-use Codeburner\Router\Collectors\{ControllerCollectorTrait, ResourceCollectorTrait};
 use LogicException;
 
 /**
@@ -20,11 +19,9 @@ use LogicException;
  * because the routes will not be used until the collector is used.
  */
 
-include_once __DIR__ . "/Route.php";
-include_once __DIR__ . "/Parser.php";
-include_once __DIR__ . "/Group.php";
-include_once __DIR__ . "/Collectors/ControllerCollectorTrait.php";
-include_once __DIR__ . "/Collectors/ResourceCollectorTrait.php";
+include_once "./Route.php";
+include_once "./Parser.php";
+include_once "./Group.php";
 
 /**
  * The Collector class hold, parse and build routes.
@@ -34,9 +31,6 @@ include_once __DIR__ . "/Collectors/ResourceCollectorTrait.php";
 
 class Collector
 {
-
-    use ControllerCollectorTrait;
-    use ResourceCollectorTrait;
 
     /**
      * All the supported http methods separated by spaces.
@@ -78,6 +72,30 @@ class Collector
      */
 
     protected $parser;
+
+    /**
+     * A map of all resource routes.
+     *
+     * @var array
+     */
+
+    protected $resourceful = [
+        "index"  => ["get",    "/{name}"],
+        "make"   => ["get",    "/{name}/make"],
+        "create" => ["post",   "/{name}"],
+        "show"   => ["get",    "/{name}/{id:int+}"],
+        "edit"   => ["get",    "/{name}/{id:int+}/edit"],
+        "update" => ["put",    "/{name}/{id:int+}"],
+        "delete" => ["delete", "/{name}/{id:int+}"],
+    ];
+
+    /**
+     * Define how controller actions names will be joined to form the route pattern.
+     *
+     * @var string
+     */
+
+    protected $controllerActionJoin = "/";
 
     /**
      * Collector constructor.
@@ -175,13 +193,216 @@ class Collector
     }
 
     /**
-     * Group all given routes.
+     * Resource routing allows you to quickly declare all of the common routes for a given resourceful controller. 
+     * Instead of declaring separate routes for your index, show, new, edit, create, update and destroy actions, 
+     * a resourceful route declares them in a single line of code.
      *
-     * @param Route[] $routes
+     * @param string $resource The resource class full name.
+     * @param string $name The resource custom defined name.
+     *
+     * @return Resource
+     */
+
+    public function resource(string $resource, string $name = "") : Resource
+    {
+        if ($name === "") {
+            $namespaces = explode("\\", $resource);
+            $name       = str_replace(["controller", "resource"], "", strtolower(end($namespaces)));
+        }
+
+        $resource = new Resource;
+
+        foreach ($this->resourceful as $action => $map) {
+            $resource->set(
+                $this->set($map[0], str_replace("{name}", $map[1], $alias) , [$resource, $action])
+                     ->setName("$alias.$action")
+            );
+        }
+
+        return $resource;
+    }
+
+    /**
+     * Register several resources at same time.
+     *
+     * @param string ...$resources All resource full names.
+     * @return Resource[]
+     */
+
+    public function resources(string ...$resources) : array
+    {
+        $resources = [];
+
+        foreach ($resources as $resource) {
+            $resources[] = $this->resource($resource);
+        }
+
+        return $resources;
+    }
+
+    /**
+     * Maps all the controller methods that begins with a HTTP method, and maps the rest of
+     * name as a path. The path will be the method name with slashes before every camelcased 
+     * word and without the HTTP method prefix, and the controller name will be used to prefix
+     * the route pattern. e.g. ArticlesController::getCreate will generate a route to: GET articles/create
+     *
+     * @param string $controller The controller name
+     * @param string $prefix
+     *
+     * @throws \ReflectionException
      * @return Group
      */
 
-    public function group(array $routes) : Group
+    public function controller(string $controller, $prefix = null) : Group
+    {
+        $controller = new ReflectionClass($controller);
+        $prefix     = $prefix === null ? $this->getControllerPrefix($controller) : $prefix;
+        $methods    = $controller->getMethods(ReflectionMethod::IS_PUBLIC);
+        return $this->collectControllerRoutes($controller, $methods, "/$prefix/");
+    }
+
+    /**
+     * Maps several controllers at same time.
+     *
+     * @param string ...$controllers Controllers name.
+     * @throws \ReflectionException
+     * @return Group
+     */
+
+    public function controllers(string ...$controllers) : Group
+    {
+        $group = new Group;
+        foreach ($controllers as $controller)
+            $group->set($this->controller($controller));
+        return $group;
+    }
+
+    /**
+     * @param ReflectionClass $controller
+     * @param ReflectionMethod[] $methods
+     * @param string $prefix
+     *
+     * @return Group
+     */
+
+    private function collectControllerRoutes(ReflectionClass $controller, array $methods, string $prefix) : Group
+    {
+        $group = new Group;
+        $controllerDefaultStrategy = $this->getAnnotatedStrategy($controller);
+
+        foreach ($methods as $method) {
+            $name = preg_split("~(?=[A-Z])~", $method->name);
+            $http = $name[0];
+            unset($name[0]);
+ 
+            if (strpos(Collector::HTTP_METHODS, $http) !== false) {
+                $action   = $prefix . strtolower(implode($this->controllerActionJoin, $name));
+                $dynamic  = $this->getMethodConstraints($method);
+                $strategy = $this->getAnnotatedStrategy($method);
+
+                $route = $this->set($http, "$action$dynamic", [$controller->name, $method->name]);
+
+                if ($strategy !== null) {
+                       $route->setStrategy($strategy);
+                } else $route->setStrategy($controllerDefaultStrategy);
+
+                $group->set($route);
+            }
+        }
+
+        return $group;
+    }
+
+    /**
+     * @param ReflectionClass $controller
+     *
+     * @return string
+     */
+
+    private function getControllerPrefix(ReflectionClass $controller) : string
+    {
+        preg_match("~\@prefix\s([a-zA-Z\\\_]+)~i", (string) $controller->getDocComment(), $prefix);
+        return isset($prefix[1]) ? $prefix[1] : str_replace("controller", "", strtolower($controller->getShortName()));
+    }
+
+    /**
+     * @param \ReflectionMethod
+     * @return string
+     */
+
+    private function getMethodConstraints(ReflectionMethod $method) : string
+    {
+        $beginPath = "";
+        $endPath = "";
+
+        if ($parameters = $method->getParameters()) {
+            $types = $this->getParamsConstraint($method);
+
+            foreach ($parameters as $parameter) {
+                if ($parameter->isOptional()) {
+                    $beginPath .= "[";
+                    $endPath .= "]";
+                }
+
+                $beginPath .= $this->getPathConstraint($parameter, $types);
+            }
+        }
+
+        return $beginPath . $endPath;
+    }
+
+    /**
+     * @param ReflectionParameter $parameter
+     * @param string[] $types
+     *
+     * @return string
+     */
+
+    private function getPathConstraint(ReflectionParameter $parameter, array $types) : string
+    {
+        $name = $parameter->name;
+        $path = "/{" . $name;
+        return isset($types[$name]) ? "$path:{$types[$name]}}" : "$path}";
+    }
+
+    /**
+     * @param ReflectionMethod $method
+     * @return string[]
+     */
+
+    private function getParamsConstraint(ReflectionMethod $method) : array
+    {
+        $params = [];
+        preg_match_all("~\@param\s(" . implode("|", array_keys($this->getParser()->getWildcards())) . "|\(.+\))\s\\$([a-zA-Z0-1_]+)~i",
+            $method->getDocComment(), $types, PREG_SET_ORDER);
+
+        foreach ((array) $types as $type) {
+            // if a pattern is defined on Match take it otherwise take the param type by PHPDoc.
+            $params[$type[2]] = isset($type[4]) ? $type[4] : $type[1];
+        }
+
+        return $params;
+    }
+
+    /**
+     * @param ReflectionClass|ReflectionMethod $reflector
+     * @return string|null
+     */
+
+    private function getAnnotatedStrategy($reflector)
+    {
+        preg_match("~\@strategy\s([a-zA-Z\\\_]+)~i", (string) $reflector->getDocComment(), $strategy);
+        return isset($strategy[1]) ? $strategy[1] : null;
+    }
+
+    /**
+     * Group all given routes.
+     *
+     * @param Route ...$routes
+     * @return Group
+     */
+
+    public function group(Route ...$routes) : Group
     {
         $group = new Group;
         foreach ($routes as $route)
@@ -313,6 +534,30 @@ class Collector
 
         $this->parser = $parser;
         return $this;
+    }
+
+    /**
+     * Define how controller actions names will be joined to form the route pattern.
+     * Defaults to "/" so actions like "getMyAction" will be "/my/action". If changed to
+     * "-" the new pattern will be "/my-action".
+     *
+     * @param string $join
+     * @return self
+     */
+
+    public function setControllerActionJoin(string $join) : self
+    {
+        $this->controllerActionJoin = $join;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+
+    public function getControllerActionJoin() : string
+    {
+        return $this->controllerActionJoin;
     }
     
 }

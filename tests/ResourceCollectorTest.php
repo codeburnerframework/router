@@ -49,7 +49,7 @@ class ResourceCollectorTest extends PHPUnit_Framework_TestCase
     public function test_MultipleResourceCollector()
     {
         $resources = ['Resource', 'AnotherResource'];
-        $this->collector->resources($resources);
+        $this->collector->resource(...$resources);
 
         foreach ($resources as $resource) {
             foreach ($this->actions as $action) {

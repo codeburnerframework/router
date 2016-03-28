@@ -109,7 +109,7 @@ class Matcher
                 $route = $map[count($matches)];
                 unset($matches[0]);
 
-                $route->setParams(array_combine($route->getParams(), array_filter($matches)));
+                $route->setParams(array_combine($route->getParam(), array_filter($matches)));
 
                 return $route;
             }
@@ -149,7 +149,7 @@ class Matcher
         $groupCount = (int) $map = $regex = [];
 
         foreach ($routes as $route) {
-            $params           = $route->getParams();
+            $params           = $route->getParam();
             $paramsCount      = count($params);
             $groupCount       = max($groupCount, $paramsCount) + 1;
             $regex[]          = $route->getPattern() . str_repeat("()", $groupCount - $paramsCount - 1);

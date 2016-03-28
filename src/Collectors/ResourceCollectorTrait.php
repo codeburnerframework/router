@@ -58,29 +58,22 @@ trait ResourceCollectorTrait
      * Instead of declaring separate routes for your index, show, new, edit, create, update and destroy actions, 
      * a resourceful route declares them in a single line of code.
      *
-     * @param string $controller The controller name.
-     * @param array  $options    Some options like, "as" to name the route pattern, "only" to
-     *                           explicit say that only this routes will be registered, and
-     *                           "except" that register all the routes except the indicates.
+     * @param string $resource The resource name.
      * @return RouteResource
      */
 
-    public function resource($controller, array $options = array())
+    public function resource(string ...$resources)
     {
-        $name       = isset($options["prefix"]) ? $options["prefix"] : "";
-        $name      .= $this->getResourceName($controller, $options);
-        $actions    = $this->getResourceActions($options);
-        $resource = new RouteResource;
+        foreach ($resources as $resource) {
+            $name = str_replace(["controller", "resource"], "", strtolower($resource));
+            $resource = new RouteResource;
 
-        foreach ($actions as $action => $map) {
-            $resource->set(
-                $this->set(
-                    $map[0],
-                    $this->getResourcePath($action, $map[1], $name, $options),
-                    [$controller, $action]
-                )
-                    ->setName("$name.$action")
-            );
+            foreach ($this->map as $action => $map) {
+                $resource->set(
+                    $this->set($map[0], str_replace("{name}", $map[1], $name) , [$resource, $action])
+                         ->setName("$name.$action")
+                );
+            }
         }
 
         return $resource;

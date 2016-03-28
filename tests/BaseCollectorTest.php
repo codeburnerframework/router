@@ -176,10 +176,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_Group()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/', 'Foo\Bar::method'),
             $this->collector->get('/foo', 'Foo\Bar::method')
-        ]);
+        );
 
         $this->assertInstanceOf('Codeburner\Router\Group', $group);
         $this->assertTrue(count($group->all()) === 2);
@@ -187,9 +187,9 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_GroupConstraint()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/{id:int}', 'Foo\Bar::method')
-        ]);
+        );
 
         $group->setConstraint('id', 'uid+');
 
@@ -201,10 +201,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_GroupMethod()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/foo', 'Foo\Bar::method'),
             $this->collector->put('/bar', 'Foo\Bar::method')
-        ]);
+        );
 
         $group->setMethod('post');
 
@@ -214,10 +214,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_GroupAction()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/foo', 'Foo\Bar::method'),
             $this->collector->get('/bar', 'Foo\Bar::method')
-        ]);
+        );
 
         $group->setAction(function () {
             return 2;
@@ -229,10 +229,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_GroupNamespace()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/foo', 'Bar::method'),
             $this->collector->get('/bar', 'Bar::method')
-        ]);
+        );
 
         $group->setNamespace('Foo\\');
 
@@ -242,10 +242,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_GroupMetadata()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/foo', 'Foo\Bar::method'),
             $this->collector->get('/bar', 'Foo\Bar::method')
-        ]);
+        );
 
         $group->setMetadata('test', 23);
         $this->assertEquals(23, $this->matcher->match('get', '/foo')->getMetadata('test'));
@@ -253,10 +253,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_GroupMetadataArray()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/foo', 'Foo\Bar::method'),
             $this->collector->get('/bar', 'Foo\Bar::method')
-        ]);
+        );
 
         $group->setMetadataArray(['test' => 23, 'test2' => 21]);
         $this->assertEquals(['test' => 23, 'test2' => 21], $this->matcher->match('get', '/foo')->getMetadataArray());
@@ -264,10 +264,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_GroupDefault()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/foo/{id}', 'Foo\Bar::method'),
             $this->collector->get('/bar/{id}', 'Foo\Bar::method')
-        ]);
+        );
 
         $group->setAction(function ($test, $id) {
             return $id == 1 && $test == 23;
@@ -280,10 +280,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
 
     public function test_GroupDefaults()
     {
-        $group = $this->collector->group([
+        $group = $this->collector->group(
             $this->collector->get('/foo/{id}', 'Foo\Bar::method'),
             $this->collector->get('/bar/{id}', 'Foo\Bar::method')
-        ]);
+        );
 
         $group->setAction(function ($test1, $test2, $id) {
             return $id == 1 && $test1 == 23 && $test2 == 21;
@@ -384,10 +384,10 @@ class BaseCollectorTest extends PHPUnit_Framework_TestCase
     {
         $this->setExpectedException("LogicException");
 
-        $this->collector->group([
+        $this->collector->group(
             $this->collector->get("/", ""),
             $this->collector->get("/1", "")
-        ])->setName("test");
+        )->setName("test");
     }
 
 }
