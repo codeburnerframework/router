@@ -10,7 +10,7 @@
 
 An blazing fast PHP router system with amazing features and abstraction.
 
-Thank's to [Nikita Popov's](https://github.com/nikic/) for motivate me with [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
+Thanks to [Nikita Popov's](https://github.com/nikic/) for motivate me with [this post](https://nikic.github.io/2014/02/18/Fast-request-Router-using-regular-expressions.html).
 
 ## Installation
 
@@ -395,7 +395,7 @@ $collector->resource("ArticleResource")->shallow(
 
 This will generate the exact same routes as the first example.
 
-> **NOTE:** `shallow` method act the same way as `nest` method, so you can always nest these methods, and use one with each other. 
+> **NOTE:** `shallow` method act the same way as `nest` method, so you can always nest these methods, and use one with each other.
 
 ##### Adding More Actions
 
@@ -415,7 +415,7 @@ All the routes in resource receive a [name](#names) that will be composed by the
 ```php
 class PhotosResource {
     public function index() {
-    
+
     }
 }
 
@@ -438,7 +438,7 @@ Or using the `translate(array translations)` method of `Codeburner\Router\Resour
 
 ```php
 $collector->resource("ArticleResource", ["as" => "kategorien"])->translate(["new" => "neu", "edit": "bearbeiten"]);
-``` 
+```
 
 The two examples above translate `ArticleResource` routes to german, changing the prefix to `kategorien` and the `new` and `edit` keywords to `neu` and `bearbeiten` respectively.
 
