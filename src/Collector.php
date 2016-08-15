@@ -10,8 +10,8 @@
 
 namespace Codeburner\Router;
 
-use Codeburner\Router\Exceptions\{BadRouteException, MethodNotSupportedException};
-use LogicException;
+use Codeburner\Router\Exceptions\BadRouteException;
+use LogicException, BadMethodCallException;
 
 /**
  * Explicit Avoiding autoload for classes and traits
@@ -19,9 +19,8 @@ use LogicException;
  * because the routes will not be used until the collector is used.
  */
 
-include_once "./Route.php";
-include_once "./Parser.php";
-include_once "./Group.php";
+include_once __DIR__ . "/Route.php";
+include_once __DIR__ . "/Parser.php";
 
 /**
  * The Collector class hold, parse and build routes.
@@ -32,13 +31,23 @@ include_once "./Group.php";
 class Collector
 {
 
+    const HTTP_METHODS = ["get", "post", "put", "patch", "delete"];
+
     /**
-     * All the supported http methods separated by spaces.
+     * A map of all resource routes.
      *
-     * @var string
+     * @var array
      */
 
-    const HTTP_METHODS = "get post put patch delete";
+    const RESOURCEFUL = [
+        "index"  => ["get",    "/{name}"],
+        "create" => ["post",   "/{name}"],
+        "make"   => ["get",    "/{name}/make"],
+        "show"   => ["get",    "/{name}/{id:int+}"],
+        "edit"   => ["get",    "/{name}/{id:int+}/edit"],
+        "update" => ["put",    "/{name}/{id:int+}"],
+        "delete" => ["delete", "/{name}/{id:int+}"],
+    ];
 
     /**
      * The static routes are simple stored in a multidimensional array, the first
@@ -74,30 +83,6 @@ class Collector
     protected $parser;
 
     /**
-     * A map of all resource routes.
-     *
-     * @var array
-     */
-
-    protected $resourceful = [
-        "index"  => ["get",    "/{name}"],
-        "make"   => ["get",    "/{name}/make"],
-        "create" => ["post",   "/{name}"],
-        "show"   => ["get",    "/{name}/{id:int+}"],
-        "edit"   => ["get",    "/{name}/{id:int+}/edit"],
-        "update" => ["put",    "/{name}/{id:int+}"],
-        "delete" => ["delete", "/{name}/{id:int+}"],
-    ];
-
-    /**
-     * Define how controller actions names will be joined to form the route pattern.
-     *
-     * @var string
-     */
-
-    protected $controllerActionJoin = "/";
-
-    /**
      * Collector constructor.
      *
      * @param Parser|null $parser
@@ -116,34 +101,54 @@ class Collector
      * @throws BadRouteException 
      * @throws MethodNotSupportedException
      *
-     * @return Group
+     * @return Route|Group
      */
 
-    public function set(string $method, string $pattern, $action) : Group
+    public function set(string $method, string $pattern, $action)
     {
-        $method   = $this->getValidMethod($method);
+        $method   = strtolower($method);
         $patterns = $this->parser->parsePattern($pattern);
-        $group    = new Group;
 
-        foreach ($patterns as $pattern)
-        {
-            $route = new Route($this, $method, $pattern, $action);
-            $group->setRoute($route);
+        if (count($patterns) === 1) {
+            return $this->setRoute($method, $patterns[0], $action);
+        }
 
-            if (strpos($pattern, "{") !== false) {
-                   $index = $this->getDynamicIndex($method, $pattern);
-                   $this->dynamics[$index][$pattern] = $route;
-            } else $this->statics[$method][$pattern] = $route;
+        $group = new Group;
+
+        foreach ($patterns as $pattern) {
+            $group->setRoute($this->setRoute($method, $pattern, $action));
         }
 
         return $group;
     }
 
-    public function get   (string $pattern, $action) : Group { return $this->set("get"   , $pattern, $action); }
-    public function post  (string $pattern, $action) : Group { return $this->set("post"  , $pattern, $action); }
-    public function put   (string $pattern, $action) : Group { return $this->set("put"   , $pattern, $action); }
-    public function patch (string $pattern, $action) : Group { return $this->set("patch" , $pattern, $action); }
-    public function delete(string $pattern, $action) : Group { return $this->set("delete", $pattern, $action); }
+    /**
+     * Define and register a new single Route onto the collector.
+     *
+     * @param string $method
+     * @param string $pattern
+     * @param callable $action
+     *
+     * @return Route
+     */
+
+    private function setRoute(string $method, string $pattern, $action) : Route
+    {
+        $route = new Route($this, $method, $pattern, $action);
+
+        if (strpos($pattern, "{") !== false) {
+               $index = $this->getDynamicIndex($method, $pattern);
+               $this->dynamics[$index][$pattern] = $route;
+        } else $this->statics[$method][$pattern] = $route;
+
+        return $route;
+    }
+
+    public function get   (string $pattern, $action) { return $this->set("get"   , $pattern, $action); }
+    public function post  (string $pattern, $action) { return $this->set("post"  , $pattern, $action); }
+    public function put   (string $pattern, $action) { return $this->set("put"   , $pattern, $action); }
+    public function patch (string $pattern, $action) { return $this->set("patch" , $pattern, $action); }
+    public function delete(string $pattern, $action) { return $this->set("delete", $pattern, $action); }
 
     /**
      * Insert a route into several http methods.
@@ -158,8 +163,11 @@ class Collector
     public function match(array $methods, string $pattern, $action) : Group
     {
         $group = new Group;
-        foreach ($methods as $method)
+
+        foreach ($methods as $method) {
             $group->set($this->set($method, $pattern, $action));
+        }
+
         return $group;
     }
 
@@ -174,7 +182,7 @@ class Collector
 
     public function any(string $pattern, $action) : Group
     {
-        return $this->match(explode(" ", self::HTTP_METHODS), $pattern, $action);
+        return $this->match(static::HTTP_METHODS, $pattern, $action);
     }
 
     /**
@@ -189,7 +197,7 @@ class Collector
 
     public function except($methods, string $pattern, $action) : Group
     {
-        return $this->match(array_diff(explode(" ", self::HTTP_METHODS), (array) $methods), $pattern, $action);
+        return $this->match(array_diff(static::HTTP_METHODS, (array) $methods), $pattern, $action);
     }
 
     /**
@@ -212,10 +220,10 @@ class Collector
 
         $resource = new Resource;
 
-        foreach ($this->resourceful as $action => $map) {
+        foreach (static::RESOURCEFUL as $action => $map) {
             $resource->set(
-                $this->set($map[0], str_replace("{name}", $map[1], $alias) , [$resource, $action])
-                     ->setName("$alias.$action")
+                $this->set($map[0], str_replace("{name}", $map[1], $name) , [$resource, $action])
+                     ->setName("$name.$action")
             );
         }
 
@@ -225,188 +233,36 @@ class Collector
     /**
      * Register several resources at same time.
      *
-     * @param string ...$resources All resource full names.
+     * @param array $resources All resource full names.
      * @return Resource[]
      */
 
-    public function resources(string ...$resources) : array
+    public function resources(array $resources) : array
     {
-        $resources = [];
+        $returns = [];
 
         foreach ($resources as $resource) {
-            $resources[] = $this->resource($resource);
+            $returns[] = $this->resource($resource);
         }
 
-        return $resources;
-    }
-
-    /**
-     * Maps all the controller methods that begins with a HTTP method, and maps the rest of
-     * name as a path. The path will be the method name with slashes before every camelcased 
-     * word and without the HTTP method prefix, and the controller name will be used to prefix
-     * the route pattern. e.g. ArticlesController::getCreate will generate a route to: GET articles/create
-     *
-     * @param string $controller The controller name
-     * @param string $prefix
-     *
-     * @throws \ReflectionException
-     * @return Group
-     */
-
-    public function controller(string $controller, $prefix = null) : Group
-    {
-        $controller = new ReflectionClass($controller);
-        $prefix     = $prefix === null ? $this->getControllerPrefix($controller) : $prefix;
-        $methods    = $controller->getMethods(ReflectionMethod::IS_PUBLIC);
-        return $this->collectControllerRoutes($controller, $methods, "/$prefix/");
-    }
-
-    /**
-     * Maps several controllers at same time.
-     *
-     * @param string ...$controllers Controllers name.
-     * @throws \ReflectionException
-     * @return Group
-     */
-
-    public function controllers(string ...$controllers) : Group
-    {
-        $group = new Group;
-        foreach ($controllers as $controller)
-            $group->set($this->controller($controller));
-        return $group;
-    }
-
-    /**
-     * @param ReflectionClass $controller
-     * @param ReflectionMethod[] $methods
-     * @param string $prefix
-     *
-     * @return Group
-     */
-
-    private function collectControllerRoutes(ReflectionClass $controller, array $methods, string $prefix) : Group
-    {
-        $group = new Group;
-        $controllerDefaultStrategy = $this->getAnnotatedStrategy($controller);
-
-        foreach ($methods as $method) {
-            $name = preg_split("~(?=[A-Z])~", $method->name);
-            $http = $name[0];
-            unset($name[0]);
- 
-            if (strpos(Collector::HTTP_METHODS, $http) !== false) {
-                $action   = $prefix . strtolower(implode($this->controllerActionJoin, $name));
-                $dynamic  = $this->getMethodConstraints($method);
-                $strategy = $this->getAnnotatedStrategy($method);
-
-                $route = $this->set($http, "$action$dynamic", [$controller->name, $method->name]);
-
-                if ($strategy !== null) {
-                       $route->setStrategy($strategy);
-                } else $route->setStrategy($controllerDefaultStrategy);
-
-                $group->set($route);
-            }
-        }
-
-        return $group;
-    }
-
-    /**
-     * @param ReflectionClass $controller
-     *
-     * @return string
-     */
-
-    private function getControllerPrefix(ReflectionClass $controller) : string
-    {
-        preg_match("~\@prefix\s([a-zA-Z\\\_]+)~i", (string) $controller->getDocComment(), $prefix);
-        return isset($prefix[1]) ? $prefix[1] : str_replace("controller", "", strtolower($controller->getShortName()));
-    }
-
-    /**
-     * @param \ReflectionMethod
-     * @return string
-     */
-
-    private function getMethodConstraints(ReflectionMethod $method) : string
-    {
-        $beginPath = "";
-        $endPath = "";
-
-        if ($parameters = $method->getParameters()) {
-            $types = $this->getParamsConstraint($method);
-
-            foreach ($parameters as $parameter) {
-                if ($parameter->isOptional()) {
-                    $beginPath .= "[";
-                    $endPath .= "]";
-                }
-
-                $beginPath .= $this->getPathConstraint($parameter, $types);
-            }
-        }
-
-        return $beginPath . $endPath;
-    }
-
-    /**
-     * @param ReflectionParameter $parameter
-     * @param string[] $types
-     *
-     * @return string
-     */
-
-    private function getPathConstraint(ReflectionParameter $parameter, array $types) : string
-    {
-        $name = $parameter->name;
-        $path = "/{" . $name;
-        return isset($types[$name]) ? "$path:{$types[$name]}}" : "$path}";
-    }
-
-    /**
-     * @param ReflectionMethod $method
-     * @return string[]
-     */
-
-    private function getParamsConstraint(ReflectionMethod $method) : array
-    {
-        $params = [];
-        preg_match_all("~\@param\s(" . implode("|", array_keys($this->getParser()->getWildcards())) . "|\(.+\))\s\\$([a-zA-Z0-1_]+)~i",
-            $method->getDocComment(), $types, PREG_SET_ORDER);
-
-        foreach ((array) $types as $type) {
-            // if a pattern is defined on Match take it otherwise take the param type by PHPDoc.
-            $params[$type[2]] = isset($type[4]) ? $type[4] : $type[1];
-        }
-
-        return $params;
-    }
-
-    /**
-     * @param ReflectionClass|ReflectionMethod $reflector
-     * @return string|null
-     */
-
-    private function getAnnotatedStrategy($reflector)
-    {
-        preg_match("~\@strategy\s([a-zA-Z\\\_]+)~i", (string) $reflector->getDocComment(), $strategy);
-        return isset($strategy[1]) ? $strategy[1] : null;
+        return $returns;
     }
 
     /**
      * Group all given routes.
      *
-     * @param Route ...$routes
+     * @param array $routes
      * @return Group
      */
 
-    public function group(Route ...$routes) : Group
+    public function group(array $routes) : Group
     {
         $group = new Group;
-        foreach ($routes as $route)
+
+        foreach ($routes as $route) {
             $group->set($route);
+        }
+
         return $group;
     }
 
@@ -431,9 +287,7 @@ class Collector
 
     public function findNamedRoute(string $name)
     {
-        if (isset($this->named[$name])) {
-           return $this->named[$name];
-       }
+        return $this->named[$name] ?? null;
     }
 
     /**
@@ -448,8 +302,8 @@ class Collector
         $method = strtolower($method);
 
         if (isset($this->statics[$method]) && isset($this->statics[$method][$pattern])) {
-            return $this->statics[$method][$pattern];
-        }
+               return $this->statics[$method][$pattern];
+        } else return null;
     }
 
     /**
@@ -462,7 +316,8 @@ class Collector
     public function findDynamicRoutes(string $method, string $pattern)
     {
         $index = $this->getDynamicIndex($method, $pattern);
-        return isset($this->dynamics[$index]) ? $this->dynamics[$index] : null;
+
+        return $this->dynamics[$index] ?? null;
     }
 
     /**
@@ -478,26 +333,6 @@ class Collector
     }
 
     /**
-     * Determine if the http method is valid.
-     *
-     * @param string $method
-     *
-     * @throws MethodNotSupportedException
-     * @return string
-     */
-
-    protected function getValidMethod(string $method) : string
-    {
-        $method = strtolower($method);
-
-        if (strpos(self::HTTP_METHODS, $method) === false) {
-            throw new MethodNotSupportedException($method);
-        }
-
-        return $method;
-    }
-
-    /**
      * @param string $name
      * @param Route $route
      *
@@ -507,7 +342,37 @@ class Collector
     public function setRouteName(string $name, Route $route) : self
     {
         $this->named[$name] = $route;
+
         return $this;
+    }
+
+    /**
+     * Generate a path to a route named by $name.
+     *
+     * @param string $name
+     * @param array $args
+     *
+     * @throws BadMethodCallException
+     * @return string
+     */
+
+    public function getPath(string $name, array $args = []) : string
+    {
+        $parser  = $this->getParser();
+        $route   = $this->findNamedRoute($name);
+        $pattern = $route->getPattern();
+
+        preg_match_all("~" . $parser::DYNAMIC_REGEX . "~x", $pattern, $matches, PREG_SET_ORDER);
+
+        foreach ((array) $matches as $key => $match) {
+            if (!isset($args[$match[1]])) {
+                throw new BadMethodCallException("Missing argument '{$match[1]}' on creation of link for '{$name}' route.");
+            }
+
+            $pattern = str_replace($match[0], $args[$match[1]], $pattern);
+        }
+
+        return $pattern;
     }
 
     /**
@@ -526,38 +391,15 @@ class Collector
      * @return self
      */
 
-    public function setParser(Parser $parser) : self
+    public function setParser(Parser $parser) : static
     {
         if (!empty($this->statics) || !empty($this->dynamics)) {
             throw new LogicException("You can't define a route parser after registering a route.");
         }
 
         $this->parser = $parser;
+
         return $this;
-    }
-
-    /**
-     * Define how controller actions names will be joined to form the route pattern.
-     * Defaults to "/" so actions like "getMyAction" will be "/my/action". If changed to
-     * "-" the new pattern will be "/my-action".
-     *
-     * @param string $join
-     * @return self
-     */
-
-    public function setControllerActionJoin(string $join) : self
-    {
-        $this->controllerActionJoin = $join;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-
-    public function getControllerActionJoin() : string
-    {
-        return $this->controllerActionJoin;
     }
     
 }

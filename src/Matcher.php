@@ -264,7 +264,7 @@ class Matcher
 
     protected function getHttpMethodsBut(string $targetHttpMethod) : array
     {
-        return array_diff(explode(" ", Collector::HTTP_METHODS), [$targetHttpMethod]);
+        return array_diff(Collector::HTTP_METHODS, [$targetHttpMethod]);
     }
 
     /**

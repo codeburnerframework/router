@@ -27,7 +27,7 @@ class Parser
      * @var string
      */
 
-    const DYNAMIC_REGEX = "{\s*(\w*)\s*(?::\s*([^{}]*(?:{(?-1)}*)*))?\s*}";
+    const DYNAMIC_REGEX = "{\s*([\w\-]*)\s*(?::\s*([^{}]*(?:{(?-1)}*)*))?\s*}";
 
     /**
      * Some regex wildcards for easily definition of dynamic routes. ps. all keys and values must start with :
@@ -63,29 +63,15 @@ class Parser
         $withoutClosing = rtrim($pattern, "]");
         $closingNumber  = strlen($pattern) - strlen($withoutClosing);
 
-        $segments = preg_split("~" . self::DYNAMIC_REGEX . "(*SKIP)(*F)|\[~x", $withoutClosing);
-        $this->parseSegments($segments, $closingNumber, $withoutClosing);
+        $segments = preg_split("~" . static::DYNAMIC_REGEX . "(*SKIP)(*F)|\[~x", $withoutClosing);
 
-        return $this->buildSegments($segments);
-    }
-
-    /**
-     * Parse all the possible patterns seeking for an incorrect or incompatible pattern.
-     *
-     * @param string[] $segments       Segments are all the possible patterns made on top of a pattern with optional segments.
-     * @param int      $closingNumber  The count of optional segments.
-     * @param string   $withoutClosing The pattern without the closing token of an optional segment. aka: ]
-     *
-     * @throws BadRouteException
-     */
-
-    protected function parseSegments(array $segments, int $closingNumber, string $withoutClosing)
-    {
         if ($closingNumber !== count($segments) - 1) {
-            if (preg_match("~" . self::DYNAMIC_REGEX . "(*SKIP)(*F)|\]~x", $withoutClosing)) {
+            if (preg_match("~" . static::DYNAMIC_REGEX . "(*SKIP)(*F)|\]~x", $withoutClosing)) {
                    throw new BadRouteException(BadRouteException::OPTIONAL_SEGMENTS_ON_MIDDLE);
             } else throw new BadRouteException(BadRouteException::UNCLOSED_OPTIONAL_SEGMENTS);
         }
+
+        return $this->buildSegments($segments);
     }
 
     /**
@@ -120,8 +106,11 @@ class Parser
     public function getWildcards() : array
     {
         $wildcards = [];
-        foreach ($this->wildcards as $token => $regex)
+
+        foreach ($this->wildcards as $token => $regex) {
             $wildcards[substr($token, 1)] = substr($regex, 1);
+        }
+
         return $wildcards;
     }
 
@@ -154,6 +143,7 @@ class Parser
     public function setWildcard(string $wildcard, string $pattern) : self
     {
         $this->wildcards[":$wildcard"] = ":$pattern";
+
         return $this;
     }
 

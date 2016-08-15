@@ -151,6 +151,7 @@ class Route
     public function forget() : self
     {
         $this->collector->forget($this->method, $this->pattern);
+
         return $this;
     }
 
@@ -202,7 +203,7 @@ class Route
 
         if (is_array($callable)) {
             if (is_string($callable[0])) {
-                   $callable[0] = $this->parseCallableController($callable[0], $container);
+                $callable[0] = $this->parseCallableController($callable[0], $container);
             }
 
             $callable[1] = $this->parseCallablePlaceholders($callable[1]);

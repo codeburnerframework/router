@@ -33,26 +33,26 @@ class Resource extends Group
     /**
      * Remove the routes without the passed methods.
      *
-     * @param string ...$methods
+     * @param string|string[] $methods
      * @return self
      */
 
-    public function only(string ...$methods) : self
+    public function only($methods)
     {
-        $this->filterByMethod($methods, false);
+        $this->filterByMethod((array) $methods, false);
         return $this;
     }
 
     /**
      * Remove the routes with the passed methods.
      *
-     * @param string ...$methods
+     * @param string|string[] $methods
      * @return self
      */
 
-    public function except(string ...$methods) : self
+    public function except($methods)
     {
-        $this->filterByMethod($methods, true);
+        $this->filterByMethod((array) $methods, true);
         return $this;
     }
 
@@ -81,7 +81,7 @@ class Resource extends Group
      * @return self
      */
 
-    public function translate(array $translations) : self
+    public function translate(array $translations)
     {
         foreach ($this->routes as $route) {
             $action = $route->getAction()[1];
@@ -104,7 +104,7 @@ class Resource extends Group
      * @return self
      */
 
-    public function member($route) : self
+    public function member($route)
     {
         $resource = new self;
 
@@ -121,7 +121,7 @@ class Resource extends Group
      * @return self
      */
 
-    public function nest($resource) : self
+    public function nest($resource)
     {
         if (!$resource instanceof self) {
              $resource = new $resource;
@@ -144,7 +144,7 @@ class Resource extends Group
      * @return self
      */
 
-    public function shallow($resource) : self
+    public function shallow($resource)
     {
         if (!$resource instanceof self) {
              $resource = new $resource;
